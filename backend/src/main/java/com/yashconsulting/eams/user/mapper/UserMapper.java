@@ -9,45 +9,51 @@ import org.springframework.stereotype.Component;
 @Component
 public class UserMapper {
 
-    public User toEntity(UserCreateRequest request) {
-        if (request == null) {
+    public User toEntity(UserCreateRequest dto) {
+        if (dto == null) {
             return null;
         }
 
         return User.builder()
-                .firstName(request.getFirstName())
-                .lastName(request.getLastName())
-                .email(request.getEmail())
-                .password(request.getPassword())
-                .active(true)
+                .firstName(dto.getFirstName() != null ? dto.getFirstName().trim() : null)
+                .lastName(dto.getLastName() != null ? dto.getLastName().trim() : null)
+                .email(dto.getEmail() != null ? dto.getEmail().trim() : null)
+                .password(dto.getPassword()) // Do not trim password
+                .active(dto.getActive() != null ? dto.getActive() : true)
                 .build();
     }
 
-    public void updateEntity(UserUpdateRequest request, User user) {
-        if (request == null || user == null) {
-            return;
-        }
-
-        user.setFirstName(request.getFirstName());
-        user.setLastName(request.getLastName());
-        user.setEmail(request.getEmail());
-    }
-
-    public UserResponse toResponse(User user) {
-        if (user == null) {
+    public UserResponse toResponse(User entity) {
+        if (entity == null) {
             return null;
         }
 
         return UserResponse.builder()
-                .id(user.getId())
-                .firstName(user.getFirstName())
-                .lastName(user.getLastName())
-                .email(user.getEmail())
-                .active(user.getActive())
-                .createdAt(user.getCreatedAt())
-                .updatedAt(user.getUpdatedAt())
-                .createdBy(user.getCreatedBy())
-                .updatedBy(user.getUpdatedBy())
+                .id(entity.getId())
+                .firstName(entity.getFirstName())
+                .lastName(entity.getLastName())
+                .email(entity.getEmail())
+                .active(entity.getActive())
+                .createdAt(entity.getCreatedAt())
+                .updatedAt(entity.getUpdatedAt())
                 .build();
+    }
+
+    public void updateEntity(UserUpdateRequest dto, User entity) {
+        if (dto == null || entity == null) {
+            return;
+        }
+
+        if (dto.getFirstName() != null && !dto.getFirstName().isBlank()) {
+            entity.setFirstName(dto.getFirstName().trim());
+        }
+
+        if (dto.getLastName() != null && !dto.getLastName().isBlank()) {
+            entity.setLastName(dto.getLastName().trim());
+        }
+
+        if (dto.getActive() != null) {
+            entity.setActive(dto.getActive());
+        }
     }
 }

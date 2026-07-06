@@ -4,7 +4,8 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
@@ -17,6 +18,4 @@ public class UserResponse {
     private Boolean active;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
-    private String createdBy;
-    private String updatedBy;
 }
