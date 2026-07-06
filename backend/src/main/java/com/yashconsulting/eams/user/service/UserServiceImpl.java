@@ -10,6 +10,10 @@ import com.yashconsulting.eams.user.entity.User;
 import com.yashconsulting.eams.user.mapper.UserMapper;
 import com.yashconsulting.eams.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import com.yashconsulting.eams.user.specification.UserSpecification;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -71,8 +75,29 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional(readOnly = true)
     public Page<UserResponse> searchUsers(UserSearchRequest request) {
-        // TODO: Implement dynamic specifications search in next sprint
-        throw new UnsupportedOperationException("Dynamic search using specifications is not implemented yet.");
+        Specification<User> specification = UserSpecification.build(request);
+        
+        Sort.Direction direction = Sort.Direction.ASC;
+        if (request.getSortDirection() != null) {
+            try {
+                direction = Sort.Direction.fromString(request.getSortDirection().toUpperCase(Locale.ROOT));
+            } catch (IllegalArgumentException e) {
+                // Keep default ASC if input sorting is malformed
+            }
+        }
+        
+        String sortByField = (request.getSortBy() != null && !request.getSortBy().isBlank()) 
+                ? request.getSortBy().trim() 
+                : "id";
+
+        Pageable pageable = PageRequest.of(
+                request.getPage() != null ? request.getPage() : 0,
+                request.getSize() != null ? request.getSize() : 20,
+                Sort.by(direction, sortByField)
+        );
+
+        return userRepository.findAll(specification, pageable)
+                .map(userMapper::toResponse);
     }
 
     @Override
