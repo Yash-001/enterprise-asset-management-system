@@ -3,6 +3,11 @@ package com.yashconsulting.eams.user.entity;
 import com.yashconsulting.eams.security.Role;
 import jakarta.persistence.*;
 import lombok.*;
+import org.springframework.data.annotation.CreatedBy;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedBy;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -13,6 +18,7 @@ import java.util.List;
 
 @Entity
 @Table(name = "users")
+@EntityListeners(AuditingEntityListener.class)
 @Getter
 @Setter
 @ToString(exclude = "password")
@@ -47,38 +53,21 @@ public class User implements UserDetails {
     @Builder.Default
     private Role role = Role.USER;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
+    @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @CreatedBy
     @Column(name = "created_by", length = 100)
     private String createdBy;
 
+    @LastModifiedBy
     @Column(name = "updated_by", length = 100)
     private String updatedBy;
-
-    @PrePersist
-    protected void onCreate() {
-        LocalDateTime now = LocalDateTime.now();
-        this.createdAt = now;
-        this.updatedAt = now;
-        if (this.createdBy == null) {
-            this.createdBy = "SYSTEM";
-        }
-        if (this.updatedBy == null) {
-            this.updatedBy = "SYSTEM";
-        }
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-        if (this.updatedBy == null) {
-            this.updatedBy = "SYSTEM";
-        }
-    }
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
