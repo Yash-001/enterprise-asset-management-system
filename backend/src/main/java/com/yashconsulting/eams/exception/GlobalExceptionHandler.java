@@ -30,6 +30,13 @@ public class GlobalExceptionHandler {
         return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(AssetCodeAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleAssetCodeAlreadyExistsException(
+            AssetCodeAlreadyExistsException ex, HttpServletRequest request) {
+        log.info("Asset code already exists exception: {}", ex.getMessage());
+        return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidationException(
             MethodArgumentNotValidException ex, HttpServletRequest request) {
