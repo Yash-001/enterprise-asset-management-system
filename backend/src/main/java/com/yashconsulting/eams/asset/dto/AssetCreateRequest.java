@@ -1,7 +1,6 @@
 package com.yashconsulting.eams.asset.dto;
 
 import com.yashconsulting.eams.asset.entity.AssetStatus;
-import com.yashconsulting.eams.asset.validation.UniqueAssetCode;
 import com.yashconsulting.eams.user.validation.NoLeadingTrailingWhitespace;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
@@ -22,7 +21,6 @@ public class AssetCreateRequest {
     @NotBlank(message = "Asset code must not be blank")
     @Size(max = 100, message = "Asset code must not exceed 100 characters")
     @NoLeadingTrailingWhitespace(message = "Asset code must not contain leading or trailing spaces")
-    @UniqueAssetCode
     private String assetCode;
 
     @Schema(description = "Name of the asset", example = "Developer Laptop", requiredMode = Schema.RequiredMode.REQUIRED)
