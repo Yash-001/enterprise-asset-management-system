@@ -53,6 +53,21 @@ Version Control
 
 ---
 
+## Configuration
+
+The backend application supports configuration overrides via environment variables.
+
+### Environment Variables
+
+| Variable | Description | Local Default |
+| --- | --- | --- |
+| `DB_URL` | Database JDBC URL | `jdbc:postgresql://localhost:5432/enterprise_asset_management` |
+| `DB_USERNAME` | Database username | `postgres` |
+| `DB_PASSWORD` | Database password | `postgres` |
+| `JWT_SECRET` | Base64-encoded secret key for signing JWTs | `MzRjYjVkNmU3YzhhOWI0ZTEwZjJhM2M1ZTZiN2Q4ZTkxMGExMmIzYzRkNWU2ZjdhOGI5YzBkMWUyZjNhNGI1Yw==` |
+
+---
+
 ## License
 
 MIT
