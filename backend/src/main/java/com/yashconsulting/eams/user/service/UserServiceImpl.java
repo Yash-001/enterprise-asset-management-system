@@ -67,9 +67,11 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserResponse> getAllUsers(Pageable pageable) {
-        return userRepository.findAll(pageable)
-                .map(userMapper::toResponse);
+    public Page<UserResponse> getAllUsers(Pageable pageable, boolean includeInactive) {
+        Page<User> usersPage = includeInactive 
+                ? userRepository.findAll(pageable) 
+                : userRepository.findAllByActiveTrue(pageable);
+        return usersPage.map(userMapper::toResponse);
     }
 
     @Override

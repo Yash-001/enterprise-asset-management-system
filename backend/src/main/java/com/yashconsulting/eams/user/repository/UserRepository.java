@@ -2,6 +2,8 @@ package com.yashconsulting.eams.user.repository;
 
 import com.yashconsulting.eams.security.Role;
 import com.yashconsulting.eams.user.entity.User;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.stereotype.Repository;
@@ -20,4 +22,8 @@ public interface UserRepository extends JpaRepository<User, Long>, JpaSpecificat
     boolean existsByEmailAndIdNot(String email, Long id);
 
     boolean existsByRole(Role role);
+
+    Optional<User> findByEmailAndActiveTrue(String email);
+
+    Page<User> findAllByActiveTrue(Pageable pageable);
 }

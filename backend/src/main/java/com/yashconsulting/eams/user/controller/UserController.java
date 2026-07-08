@@ -70,8 +70,10 @@ public class UserController {
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users list retrieved successfully")
     })
-    public ResponseEntity<Page<UserResponse>> getAllUsers(Pageable pageable) {
-        Page<UserResponse> response = userService.getAllUsers(pageable);
+    public ResponseEntity<Page<UserResponse>> getAllUsers(
+            @RequestParam(value = "includeInactive", required = false, defaultValue = "false") boolean includeInactive,
+            Pageable pageable) {
+        Page<UserResponse> response = userService.getAllUsers(pageable, includeInactive);
         return ResponseEntity.ok(response);
     }
 

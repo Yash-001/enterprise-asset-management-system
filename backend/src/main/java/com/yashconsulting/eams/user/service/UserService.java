@@ -15,7 +15,11 @@ public interface UserService {
 
     UserResponse getUserById(Long id);
 
-    Page<UserResponse> getAllUsers(Pageable pageable);
+    default Page<UserResponse> getAllUsers(Pageable pageable) {
+        return getAllUsers(pageable, false);
+    }
+
+    Page<UserResponse> getAllUsers(Pageable pageable, boolean includeInactive);
 
     Page<UserResponse> searchUsers(UserSearchRequest request);
 

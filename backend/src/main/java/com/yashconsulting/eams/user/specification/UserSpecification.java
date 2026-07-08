@@ -50,13 +50,14 @@ public class UserSpecification {
 
     public static Specification<User> build(UserSearchRequest request) {
         if (request == null) {
-            return (root, query, cb) -> cb.conjunction();
+            return (root, query, cb) -> cb.equal(root.get("active"), true);
         }
+        Boolean activeFilter = request.getActive() != null ? request.getActive() : Boolean.TRUE;
         return Specification.allOf(
                 hasFirstName(request.getFirstName()),
                 hasLastName(request.getLastName()),
                 hasEmail(request.getEmail()),
-                isActive(request.getActive())
+                isActive(activeFilter)
         );
     }
 }
