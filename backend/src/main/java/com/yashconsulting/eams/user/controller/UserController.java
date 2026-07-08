@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
@@ -31,6 +32,7 @@ public class UserController {
     private final UserService userService;
 
     @PostMapping
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Create a new user", description = "Registers a new user inside the system. Email address must be unique.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "201", description = "User created successfully",
@@ -49,6 +51,7 @@ public class UserController {
     }
 
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Get user by ID", description = "Retrieves a user profile by their database ID.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User retrieved successfully",
@@ -62,6 +65,7 @@ public class UserController {
     }
 
     @GetMapping
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Get all users (paginated)", description = "Retrieves a paginated list of all registered users.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Users list retrieved successfully")
@@ -72,6 +76,7 @@ public class UserController {
     }
 
     @GetMapping("/search")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
     @Operation(summary = "Search users dynamically", description = "Performs dynamic case-insensitive search based on filter inputs (firstName, lastName, email, active).")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "Search query completed successfully"),
@@ -83,6 +88,7 @@ public class UserController {
     }
 
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Update user details", description = "Updates the user's first name, last name, or active status. Email and password are not updatable via this API.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "200", description = "User profile updated successfully",
@@ -98,6 +104,7 @@ public class UserController {
     }
 
     @DeleteMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN')")
     @Operation(summary = "Soft delete a user", description = "Deactivates the user by setting the active flag to false. Historical records are preserved.")
     @ApiResponses(value = {
             @ApiResponse(responseCode = "204", description = "User soft deleted successfully"),
