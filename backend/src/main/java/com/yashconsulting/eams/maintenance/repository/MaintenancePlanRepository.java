@@ -38,4 +38,7 @@ public interface MaintenancePlanRepository extends JpaRepository<MaintenancePlan
 
     @Query("SELECT p FROM MaintenancePlan p WHERE p.active = true AND p.lastMaintenanceDate >= :startOfMonth AND p.lastMaintenanceDate <= :endOfMonth")
     List<MaintenancePlan> findCompletedWithinPeriod(@Param("startOfMonth") LocalDate startOfMonth, @Param("endOfMonth") LocalDate endOfMonth);
+
+    @Query("SELECT COUNT(mp) FROM MaintenancePlan mp WHERE mp.active = true AND mp.nextMaintenanceDate <= :targetDate")
+    long countUpcomingMaintenance(@Param("targetDate") LocalDate targetDate);
 }

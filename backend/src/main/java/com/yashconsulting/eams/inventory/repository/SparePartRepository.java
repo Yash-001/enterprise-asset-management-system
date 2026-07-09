@@ -41,4 +41,7 @@ public interface SparePartRepository extends JpaRepository<SparePart, Long>, Jpa
 
     @Query("SELECT s FROM SparePart s WHERE s.active = true AND s.currentStock = 0")
     Page<SparePart> findOutOfStockItems(Pageable pageable);
+
+    @Query("SELECT COUNT(s) FROM SparePart s WHERE s.active = true AND s.currentStock <= s.minimumStock")
+    long countLowStockItems();
 }
