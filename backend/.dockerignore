@@ -1,9 +1,38 @@
+# Build output
 target/
+
+# IDE
 .idea/
 *.iml
 *.iws
+*.ipr
+.vscode/
+.settings/
+.classpath
+.project
+
+# Git
 .git/
 .gitignore
+.gitattributes
+
+# Documentation
+*.md
+HELP.md
+
+# Environment & secrets
+.env
+.env.*
+
+# Uploads & logs
 uploads/
 *.log
-.mvn/wrapper/maven-wrapper.jar
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+Dockerfile
+.dockerignore
+docker-compose*.yml
