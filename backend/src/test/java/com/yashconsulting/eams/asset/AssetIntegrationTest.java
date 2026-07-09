@@ -344,4 +344,32 @@ class AssetIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].assetCode", is("AST-S2")));
     }
+
+    @Test
+    void whenUpdateAssetWithInvalidStatusTransition_thenReturns400() throws Exception {
+        Asset asset = Asset.builder()
+                .assetCode("AST-TRANS")
+                .assetName("Disposed Computer")
+                .purchaseDate(LocalDate.now())
+                .purchasePrice(BigDecimal.valueOf(100.00))
+                .status(AssetStatus.DISPOSED)
+                .active(true)
+                .build();
+        asset = assetRepository.save(asset);
+
+        AssetUpdateRequest updateRequest = AssetUpdateRequest.builder()
+                .assetName("Disposed Computer")
+                .purchaseDate(LocalDate.now())
+                .purchasePrice(BigDecimal.valueOf(100.00))
+                .status(AssetStatus.AVAILABLE)
+                .active(true)
+                .build();
+
+        mockMvc.perform(put("/api/v1/assets/" + asset.getId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateRequest)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.message", containsString("Invalid asset status transition")));
+    }
 }

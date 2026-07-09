@@ -49,6 +49,12 @@ public class AssetServiceImpl implements AssetService {
     public AssetResponse updateAsset(Long id, AssetUpdateRequest request) {
         Asset asset = getAssetByIdOrThrow(id);
 
+        if (request.getStatus() != null && request.getStatus() != asset.getStatus()) {
+            if (!asset.getStatus().isValidTransition(request.getStatus())) {
+                throw new IllegalArgumentException("Invalid asset status transition from " + asset.getStatus() + " to " + request.getStatus());
+            }
+        }
+
         assetMapper.updateEntity(request, asset);
 
         Asset updatedAsset = assetRepository.save(asset);
