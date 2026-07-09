@@ -4,6 +4,7 @@ import com.yashconsulting.eams.maintenance.dto.MaintenancePlanSearchRequest;
 import com.yashconsulting.eams.maintenance.entity.FrequencyType;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePlan;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePriority;
+import com.yashconsulting.eams.maintenance.entity.MaintenanceStatus;
 import com.yashconsulting.eams.maintenance.entity.MaintenanceType;
 import org.springframework.data.jpa.domain.Specification;
 
@@ -60,6 +61,15 @@ public class MaintenancePlanSpecification {
         };
     }
 
+    public static Specification<MaintenancePlan> hasStatus(MaintenanceStatus status) {
+        return (root, query, cb) -> {
+            if (status == null) {
+                return null;
+            }
+            return cb.equal(root.get("status"), status);
+        };
+    }
+
     public static Specification<MaintenancePlan> isActive(Boolean active) {
         return (root, query, cb) -> {
             if (active == null) {
@@ -80,6 +90,7 @@ public class MaintenancePlanSpecification {
                 hasPlanName(request.getPlanName()),
                 hasMaintenanceType(request.getMaintenanceType()),
                 hasPriority(request.getPriority()),
+                hasStatus(request.getStatus()),
                 isActive(activeFilter)
         );
     }

@@ -7,6 +7,8 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.*;
 
+import com.yashconsulting.eams.maintenance.entity.MaintenanceStatus;
+
 @Getter
 @Setter
 @NoArgsConstructor
@@ -29,6 +31,9 @@ public class MaintenancePlanSearchRequest {
 
     @Schema(description = "Filter by priority level (LOW, MEDIUM, HIGH, CRITICAL)", example = "HIGH")
     private MaintenancePriority priority;
+
+    @Schema(description = "Filter by maintenance status (SCHEDULED, IN_PROGRESS, COMPLETED, OVERDUE, CANCELLED)", example = "SCHEDULED")
+    private MaintenanceStatus status;
 
     @Schema(description = "Filter by active status", example = "true")
     private Boolean active;

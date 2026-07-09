@@ -12,6 +12,7 @@ import com.yashconsulting.eams.maintenance.dto.MaintenancePlanUpdateRequest;
 import com.yashconsulting.eams.maintenance.entity.FrequencyType;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePlan;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePriority;
+import com.yashconsulting.eams.maintenance.entity.MaintenanceStatus;
 import com.yashconsulting.eams.maintenance.entity.MaintenanceType;
 import com.yashconsulting.eams.maintenance.repository.MaintenancePlanRepository;
 import com.yashconsulting.eams.security.Role;
@@ -240,6 +241,7 @@ class MaintenancePlanIntegrationTest extends BaseIntegrationTest {
                 .frequencyValue(5)
                 .nextMaintenanceDate(LocalDate.now().plusDays(5))
                 .priority(MaintenancePriority.LOW)
+                .status(MaintenanceStatus.SCHEDULED)
                 .active(true)
                 .build();
 
@@ -341,5 +343,63 @@ class MaintenancePlanIntegrationTest extends BaseIntegrationTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.lastMaintenanceDate", is("2026-07-09")))
                 .andExpect(jsonPath("$.nextMaintenanceDate", is("2026-10-09")));
+    }
+
+    @Test
+    void whenUpdateMaintenancePlanWithInvalidStatusTransition_thenReturns400() throws Exception {
+        MaintenancePlan plan = MaintenancePlan.builder()
+                .assetId(seededAsset.getId())
+                .planCode("MP-TRANS")
+                .planName("State Transition Plan")
+                .maintenanceType(MaintenanceType.PREVENTIVE)
+                .frequencyType(FrequencyType.DAILY)
+                .frequencyValue(1)
+                .nextMaintenanceDate(LocalDate.now())
+                .priority(MaintenancePriority.LOW)
+                .status(MaintenanceStatus.CANCELLED)
+                .active(true)
+                .build();
+        plan = maintenancePlanRepository.save(plan);
+
+        MaintenancePlanUpdateRequest request = MaintenancePlanUpdateRequest.builder()
+                .planName("State Transition Plan")
+                .maintenanceType(MaintenanceType.PREVENTIVE)
+                .frequencyType(FrequencyType.DAILY)
+                .frequencyValue(1)
+                .nextMaintenanceDate(LocalDate.now())
+                .priority(MaintenancePriority.LOW)
+                .status(MaintenanceStatus.IN_PROGRESS) // CANCELLED -> IN_PROGRESS is invalid!
+                .active(true)
+                .build();
+
+        mockMvc.perform(put("/api/v1/maintenance-plans/" + plan.getId())
+                        .header("Authorization", "Bearer " + adminToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void whenSearchByStatus_thenReturnsFilteredResults() throws Exception {
+        MaintenancePlan plan = MaintenancePlan.builder()
+                .assetId(seededAsset.getId())
+                .planCode("MP-STAT-1")
+                .planName("Status Search Plan")
+                .maintenanceType(MaintenanceType.PREVENTIVE)
+                .frequencyType(FrequencyType.DAILY)
+                .frequencyValue(1)
+                .nextMaintenanceDate(LocalDate.now())
+                .priority(MaintenancePriority.LOW)
+                .status(MaintenanceStatus.IN_PROGRESS)
+                .active(true)
+                .build();
+        maintenancePlanRepository.save(plan);
+
+        mockMvc.perform(get("/api/v1/maintenance-plans/search")
+                        .header("Authorization", "Bearer " + managerToken)
+                        .param("status", "IN_PROGRESS"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(1)))
+                .andExpect(jsonPath("$.content[0].planCode", is("MP-STAT-1")));
     }
 }

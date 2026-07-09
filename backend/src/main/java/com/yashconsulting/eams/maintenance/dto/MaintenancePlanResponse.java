@@ -6,6 +6,7 @@ import com.yashconsulting.eams.maintenance.entity.MaintenanceType;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.*;
 
+import com.yashconsulting.eams.maintenance.entity.MaintenanceStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -53,6 +54,9 @@ public class MaintenancePlanResponse {
 
     @Schema(description = "Priority level of the plan", example = "HIGH")
     private MaintenancePriority priority;
+
+    @Schema(description = "Status of the maintenance plan", example = "SCHEDULED")
+    private MaintenanceStatus status;
 
     @Schema(description = "Maintenance plan active status flag", example = "true")
     private Boolean active;

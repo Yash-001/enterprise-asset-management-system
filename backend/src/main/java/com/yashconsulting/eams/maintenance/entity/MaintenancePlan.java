@@ -64,6 +64,11 @@ public class MaintenancePlan {
     @Column(name = "priority", nullable = false, length = 50)
     private MaintenancePriority priority;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "status", nullable = false, length = 50)
+    @Builder.Default
+    private MaintenanceStatus status = MaintenanceStatus.SCHEDULED;
+
     @Column(name = "active", nullable = false)
     @Builder.Default
     private Boolean active = true;

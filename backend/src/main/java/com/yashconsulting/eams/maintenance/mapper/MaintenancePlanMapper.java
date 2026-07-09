@@ -4,6 +4,7 @@ import com.yashconsulting.eams.maintenance.dto.MaintenancePlanCreateRequest;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanResponse;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanUpdateRequest;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePlan;
+import com.yashconsulting.eams.maintenance.entity.MaintenanceStatus;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,6 +27,7 @@ public class MaintenancePlanMapper {
                 .lastMaintenanceDate(request.getLastMaintenanceDate())
                 .estimatedDurationHours(request.getEstimatedDurationHours())
                 .priority(request.getPriority())
+                .status(request.getStatus() != null ? request.getStatus() : MaintenanceStatus.SCHEDULED)
                 .active(request.getActive() != null ? request.getActive() : Boolean.TRUE)
                 .build();
     }
@@ -48,6 +50,7 @@ public class MaintenancePlanMapper {
                 .lastMaintenanceDate(entity.getLastMaintenanceDate())
                 .estimatedDurationHours(entity.getEstimatedDurationHours())
                 .priority(entity.getPriority())
+                .status(entity.getStatus())
                 .active(entity.getActive())
                 .createdAt(entity.getCreatedAt())
                 .updatedAt(entity.getUpdatedAt())

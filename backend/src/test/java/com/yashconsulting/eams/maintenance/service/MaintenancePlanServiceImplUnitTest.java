@@ -2,6 +2,8 @@ package com.yashconsulting.eams.maintenance.service;
 
 import com.yashconsulting.eams.asset.repository.AssetRepository;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanResponse;
+import com.yashconsulting.eams.maintenance.entity.MaintenanceStatus;
+import com.yashconsulting.eams.maintenance.dto.MaintenancePlanUpdateRequest;
 import com.yashconsulting.eams.maintenance.entity.FrequencyType;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePlan;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePriority;
@@ -51,6 +53,7 @@ class MaintenancePlanServiceImplUnitTest {
                 .frequencyValue(3)
                 .nextMaintenanceDate(LocalDate.now().plusMonths(3))
                 .priority(MaintenancePriority.MEDIUM)
+                .status(MaintenanceStatus.SCHEDULED)
                 .active(true)
                 .build();
     }
@@ -114,7 +117,30 @@ class MaintenancePlanServiceImplUnitTest {
 
         assertEquals(LocalDate.of(2026, 7, 9), testPlan.getLastMaintenanceDate());
         assertEquals(LocalDate.of(2026, 10, 9), testPlan.getNextMaintenanceDate());
+        assertEquals(MaintenanceStatus.SCHEDULED, testPlan.getStatus());
 
         verify(maintenancePlanRepository, times(1)).save(testPlan);
+    }
+
+    @Test
+    void completeMaintenancePlan_whenCancelled_thenThrowsException() {
+        testPlan.setStatus(MaintenanceStatus.CANCELLED);
+        when(maintenancePlanRepository.findById(1L)).thenReturn(Optional.of(testPlan));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                maintenancePlanService.completeMaintenancePlan(1L, LocalDate.now()));
+    }
+
+    @Test
+    void updateMaintenancePlan_whenInvalidStatusTransition_thenThrowsException() {
+        testPlan.setStatus(MaintenanceStatus.CANCELLED);
+        MaintenancePlanUpdateRequest request = MaintenancePlanUpdateRequest.builder()
+                .status(MaintenanceStatus.IN_PROGRESS)
+                .build();
+
+        when(maintenancePlanRepository.findById(1L)).thenReturn(Optional.of(testPlan));
+
+        assertThrows(IllegalArgumentException.class, () ->
+                maintenancePlanService.updateMaintenancePlan(1L, request));
     }
 }

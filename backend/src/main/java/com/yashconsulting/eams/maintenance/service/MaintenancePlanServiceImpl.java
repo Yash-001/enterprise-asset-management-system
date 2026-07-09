@@ -9,6 +9,7 @@ import com.yashconsulting.eams.maintenance.dto.MaintenancePlanSearchRequest;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanUpdateRequest;
 import com.yashconsulting.eams.maintenance.entity.FrequencyType;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePlan;
+import com.yashconsulting.eams.maintenance.entity.MaintenanceStatus;
 import com.yashconsulting.eams.maintenance.mapper.MaintenancePlanMapper;
 import com.yashconsulting.eams.maintenance.repository.MaintenancePlanRepository;
 import com.yashconsulting.eams.maintenance.specification.MaintenancePlanSpecification;
@@ -60,6 +61,11 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
     public MaintenancePlanResponse updateMaintenancePlan(Long id, MaintenancePlanUpdateRequest request) {
         log.info("Updating maintenance plan with ID: {}", id);
         MaintenancePlan plan = getPlanByIdOrThrow(id);
+
+        if (request.getStatus() != null && request.getStatus() != plan.getStatus()) {
+            validateStatusTransition(plan.getStatus(), request.getStatus());
+            plan.setStatus(request.getStatus());
+        }
 
         maintenancePlanMapper.updateEntity(request, plan);
         MaintenancePlan updated = maintenancePlanRepository.save(plan);
@@ -119,11 +125,16 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
         log.info("Completing maintenance plan with ID: {} on date: {}", id, completionDate);
         MaintenancePlan plan = getPlanByIdOrThrow(id);
 
+        validateStatusTransition(plan.getStatus(), MaintenanceStatus.COMPLETED);
+
         java.time.LocalDate actualCompletionDate = completionDate != null ? completionDate : java.time.LocalDate.now();
         plan.setLastMaintenanceDate(actualCompletionDate);
 
         java.time.LocalDate nextDate = calculateNextMaintenanceDate(actualCompletionDate, plan.getFrequencyType(), plan.getFrequencyValue());
         plan.setNextMaintenanceDate(nextDate);
+
+        // Reschedule transitions back to SCHEDULED
+        plan.setStatus(MaintenanceStatus.SCHEDULED);
 
         MaintenancePlan updated = maintenancePlanRepository.save(plan);
         return maintenancePlanMapper.toResponse(updated);
@@ -147,6 +158,33 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
                 return completionDate.plusYears(frequencyValue);
             default:
                 throw new IllegalArgumentException("Unsupported frequency type: " + frequencyType);
+        }
+    }
+
+    private void validateStatusTransition(MaintenanceStatus currentStatus, MaintenanceStatus newStatus) {
+        if (currentStatus == newStatus) {
+            return;
+        }
+        boolean valid = false;
+        switch (currentStatus) {
+            case SCHEDULED:
+                valid = newStatus == MaintenanceStatus.IN_PROGRESS || newStatus == MaintenanceStatus.OVERDUE || newStatus == MaintenanceStatus.CANCELLED || newStatus == MaintenanceStatus.COMPLETED;
+                break;
+            case IN_PROGRESS:
+                valid = newStatus == MaintenanceStatus.COMPLETED || newStatus == MaintenanceStatus.CANCELLED;
+                break;
+            case OVERDUE:
+                valid = newStatus == MaintenanceStatus.IN_PROGRESS || newStatus == MaintenanceStatus.CANCELLED || newStatus == MaintenanceStatus.COMPLETED;
+                break;
+            case COMPLETED:
+                valid = newStatus == MaintenanceStatus.SCHEDULED;
+                break;
+            case CANCELLED:
+                valid = newStatus == MaintenanceStatus.SCHEDULED;
+                break;
+        }
+        if (!valid) {
+            throw new IllegalArgumentException("Invalid state transition from " + currentStatus + " to " + newStatus);
         }
     }
 

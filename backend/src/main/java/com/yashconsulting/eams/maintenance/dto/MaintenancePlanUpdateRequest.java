@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
 
+import com.yashconsulting.eams.maintenance.entity.MaintenanceStatus;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 
@@ -56,6 +57,10 @@ public class MaintenancePlanUpdateRequest {
     @Schema(description = "Priority level of the plan (LOW, MEDIUM, HIGH, CRITICAL)", example = "HIGH", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Priority must not be null")
     private MaintenancePriority priority;
+
+    @Schema(description = "Status of the maintenance plan", example = "SCHEDULED", requiredMode = Schema.RequiredMode.REQUIRED)
+    @NotNull(message = "Status must not be null")
+    private MaintenanceStatus status;
 
     @Schema(description = "Flag indicating whether the maintenance plan is active", example = "true", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull(message = "Active status must not be null")
