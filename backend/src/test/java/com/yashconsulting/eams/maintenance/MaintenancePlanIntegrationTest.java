@@ -402,4 +402,43 @@ class MaintenancePlanIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].planCode", is("MP-STAT-1")));
     }
+
+    @Test
+    void whenGetMaintenanceDashboard_thenReturnsAggregationsAndLists() throws Exception {
+        MaintenancePlan upcomingPlan = MaintenancePlan.builder()
+                .assetId(seededAsset.getId())
+                .planCode("MP-DASH-UP")
+                .planName("Upcoming Schedule")
+                .maintenanceType(MaintenanceType.PREVENTIVE)
+                .frequencyType(FrequencyType.DAILY)
+                .frequencyValue(1)
+                .nextMaintenanceDate(LocalDate.now().plusDays(5))
+                .priority(MaintenancePriority.HIGH)
+                .status(MaintenanceStatus.SCHEDULED)
+                .active(true)
+                .build();
+        maintenancePlanRepository.save(upcomingPlan);
+
+        MaintenancePlan overduePlan = MaintenancePlan.builder()
+                .assetId(seededAsset.getId())
+                .planCode("MP-DASH-OD")
+                .planName("Overdue Schedule")
+                .maintenanceType(MaintenanceType.PREVENTIVE)
+                .frequencyType(FrequencyType.DAILY)
+                .frequencyValue(1)
+                .nextMaintenanceDate(LocalDate.now().minusDays(2))
+                .priority(MaintenancePriority.CRITICAL)
+                .status(MaintenanceStatus.OVERDUE)
+                .active(true)
+                .build();
+        maintenancePlanRepository.save(overduePlan);
+
+        mockMvc.perform(get("/api/v1/maintenance-plans/dashboard")
+                        .header("Authorization", "Bearer " + managerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.upcomingMaintenance", hasSize(greaterThanOrEqualTo(1))))
+                .andExpect(jsonPath("$.overdueMaintenance", hasSize(greaterThanOrEqualTo(1))))
+                .andExpect(jsonPath("$.countByStatus.SCHEDULED", notNullValue()))
+                .andExpect(jsonPath("$.countByPriority.HIGH", notNullValue()));
+    }
 }

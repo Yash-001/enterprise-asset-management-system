@@ -1,5 +1,6 @@
 package com.yashconsulting.eams.maintenance.controller;
 
+import com.yashconsulting.eams.maintenance.dto.MaintenanceDashboardResponse;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanCreateRequest;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanResponse;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanSearchRequest;
@@ -64,6 +65,20 @@ public class MaintenancePlanController {
             @PathVariable Long id,
             @Valid @RequestBody MaintenancePlanUpdateRequest request) {
         MaintenancePlanResponse response = maintenancePlanService.updateMaintenancePlan(id, request);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/dashboard")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    @Operation(summary = "Get maintenance dashboard metrics", description = "Retrieves optimized maintenance schedules aggregated by status and priority, as well as upcoming, overdue, and completed lists.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Dashboard metrics successfully fetched",
+                    content = @Content(schema = @Schema(implementation = MaintenanceDashboardResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<MaintenanceDashboardResponse> getMaintenanceDashboard() {
+        MaintenanceDashboardResponse response = maintenancePlanService.getMaintenanceDashboard();
         return ResponseEntity.ok(response);
     }
 

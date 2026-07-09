@@ -23,7 +23,13 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.yashconsulting.eams.maintenance.dto.MaintenanceDashboardResponse;
+import java.time.LocalDate;
+import java.time.temporal.TemporalAdjusters;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -186,6 +192,51 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
         if (!valid) {
             throw new IllegalArgumentException("Invalid state transition from " + currentStatus + " to " + newStatus);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public MaintenanceDashboardResponse getMaintenanceDashboard() {
+        log.info("Fetching maintenance metrics dashboard data");
+        LocalDate today = LocalDate.now();
+        LocalDate endOf30Days = today.plusDays(30);
+
+        LocalDate startOfMonth = today.with(TemporalAdjusters.firstDayOfMonth());
+        LocalDate endOfMonth = today.with(TemporalAdjusters.lastDayOfMonth());
+
+        List<Object[]> statusCountsRaw = maintenancePlanRepository.countByStatus();
+        Map<String, Long> countByStatus = statusCountsRaw.stream()
+                .collect(Collectors.toMap(
+                        arr -> arr[0].toString(),
+                        arr -> (Long) arr[1]
+                ));
+
+        List<Object[]> priorityCountsRaw = maintenancePlanRepository.countByPriority();
+        Map<String, Long> countByPriority = priorityCountsRaw.stream()
+                .collect(Collectors.toMap(
+                        arr -> arr[0].toString(),
+                        arr -> (Long) arr[1]
+                ));
+
+        List<MaintenancePlanResponse> upcoming = maintenancePlanRepository.findUpcomingMaintenance(today, endOf30Days).stream()
+                .map(maintenancePlanMapper::toResponse)
+                .collect(Collectors.toList());
+
+        List<MaintenancePlanResponse> overdue = maintenancePlanRepository.findOverdueMaintenance(today).stream()
+                .map(maintenancePlanMapper::toResponse)
+                .collect(Collectors.toList());
+
+        List<MaintenancePlanResponse> completedThisMonth = maintenancePlanRepository.findCompletedWithinPeriod(startOfMonth, endOfMonth).stream()
+                .map(maintenancePlanMapper::toResponse)
+                .collect(Collectors.toList());
+
+        return MaintenanceDashboardResponse.builder()
+                .upcomingMaintenance(upcoming)
+                .overdueMaintenance(overdue)
+                .completedThisMonth(completedThisMonth)
+                .countByStatus(countByStatus)
+                .countByPriority(countByPriority)
+                .build();
     }
 
     private MaintenancePlan getPlanByIdOrThrow(Long id) {
