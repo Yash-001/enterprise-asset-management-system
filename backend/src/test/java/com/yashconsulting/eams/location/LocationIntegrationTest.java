@@ -10,6 +10,7 @@ import com.yashconsulting.eams.location.entity.Location;
 import com.yashconsulting.eams.location.repository.LocationRepository;
 import com.yashconsulting.eams.security.Role;
 import com.yashconsulting.eams.user.entity.User;
+import com.yashconsulting.eams.inventory.repository.SparePartRepository;
 import com.yashconsulting.eams.user.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -42,6 +43,9 @@ class LocationIntegrationTest extends BaseIntegrationTest {
     private LocationRepository locationRepository;
 
     @Autowired
+    private SparePartRepository sparePartRepository;
+
+    @Autowired
     private PasswordEncoder passwordEncoder;
 
     private String adminToken;
@@ -49,6 +53,7 @@ class LocationIntegrationTest extends BaseIntegrationTest {
 
     @BeforeEach
     void setUp() throws Exception {
+        sparePartRepository.deleteAll();
         locationRepository.deleteAll();
         userRepository.deleteAll();
 

@@ -65,6 +65,13 @@ public class GlobalExceptionHandler {
         return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(SparePartNumberAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleSparePartNumberAlreadyExistsException(
+            SparePartNumberAlreadyExistsException ex, HttpServletRequest request) {
+        log.info("Spare part number already exists exception: {}", ex.getMessage());
+        return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
