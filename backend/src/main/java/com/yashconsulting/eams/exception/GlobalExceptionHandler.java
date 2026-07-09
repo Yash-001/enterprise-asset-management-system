@@ -44,6 +44,13 @@ public class GlobalExceptionHandler {
         return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(LocationCodeAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleLocationCodeAlreadyExistsException(
+            LocationCodeAlreadyExistsException ex, HttpServletRequest request) {
+        log.info("Location code already exists exception: {}", ex.getMessage());
+        return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
