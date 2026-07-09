@@ -37,6 +37,7 @@ public class SparePartServiceImpl implements SparePartService {
     private final SparePartRepository sparePartRepository;
     private final LocationRepository locationRepository;
     private final SparePartMapper sparePartMapper;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -58,6 +59,7 @@ public class SparePartServiceImpl implements SparePartService {
 
         SparePart entity = sparePartMapper.toEntity(request);
         SparePart saved = sparePartRepository.save(entity);
+        checkAndPublishLowStock(saved);
         return sparePartMapper.toResponse(saved);
     }
 
@@ -74,7 +76,20 @@ public class SparePartServiceImpl implements SparePartService {
 
         sparePartMapper.updateEntity(request, entity);
         SparePart updated = sparePartRepository.save(entity);
+        checkAndPublishLowStock(updated);
         return sparePartMapper.toResponse(updated);
+    }
+
+    private void checkAndPublishLowStock(SparePart part) {
+        if (part != null && part.getActive() && part.getCurrentStock() <= part.getMinimumStock()) {
+            eventPublisher.publishEvent(new com.yashconsulting.eams.notification.event.LowStockEvent(
+                    part.getId(),
+                    part.getPartNumber(),
+                    part.getPartName(),
+                    part.getCurrentStock(),
+                    part.getMinimumStock()
+            ));
+        }
     }
 
     @Override

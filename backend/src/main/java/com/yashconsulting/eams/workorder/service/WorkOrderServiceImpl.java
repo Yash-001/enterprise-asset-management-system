@@ -34,6 +34,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     private final AssetRepository assetRepository;
     private final MaintenancePlanRepository maintenancePlanRepository;
     private final WorkOrderMapper workOrderMapper;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -60,6 +61,10 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
         WorkOrder entity = workOrderMapper.toEntity(request);
         WorkOrder saved = workOrderRepository.save(entity);
+        
+        eventPublisher.publishEvent(new com.yashconsulting.eams.notification.event.WorkOrderCreatedEvent(
+                saved.getId(), saved.getWorkOrderNumber(), saved.getAssignedTechnician()));
+
         return workOrderMapper.toResponse(saved);
     }
 
@@ -68,6 +73,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
     public WorkOrderResponse updateWorkOrder(Long id, WorkOrderUpdateRequest request) {
         log.info("Updating work order with ID: {}", id);
         WorkOrder entity = getWorkOrderOrThrow(id);
+        com.yashconsulting.eams.workorder.entity.WorkOrderStatus oldStatus = entity.getStatus();
 
         // Validate state transition if status changes
         if (request.getStatus() != null && request.getStatus() != entity.getStatus()) {
@@ -76,6 +82,13 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
         workOrderMapper.updateEntity(request, entity);
         WorkOrder updated = workOrderRepository.save(entity);
+
+        if (oldStatus != com.yashconsulting.eams.workorder.entity.WorkOrderStatus.COMPLETED 
+                && updated.getStatus() == com.yashconsulting.eams.workorder.entity.WorkOrderStatus.COMPLETED) {
+            eventPublisher.publishEvent(new com.yashconsulting.eams.notification.event.WorkOrderCompletedEvent(
+                    updated.getId(), updated.getWorkOrderNumber(), updated.getAssignedTechnician()));
+        }
+
         return workOrderMapper.toResponse(updated);
     }
 

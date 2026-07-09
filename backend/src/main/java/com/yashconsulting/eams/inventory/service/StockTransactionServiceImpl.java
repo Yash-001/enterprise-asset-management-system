@@ -30,6 +30,7 @@ public class StockTransactionServiceImpl implements StockTransactionService {
     private final StockTransactionRepository stockTransactionRepository;
     private final SparePartRepository sparePartRepository;
     private final StockTransactionMapper stockTransactionMapper;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -43,7 +44,8 @@ public class StockTransactionServiceImpl implements StockTransactionService {
         applyStockChange(sparePart, request.getTransactionType(), request.getQuantity());
 
         // Save updated spare part stock
-        sparePartRepository.save(sparePart);
+        SparePart savedPart = sparePartRepository.save(sparePart);
+        checkAndPublishLowStock(savedPart);
 
         StockTransaction entity = stockTransactionMapper.toEntity(request);
         StockTransaction saved = stockTransactionRepository.save(entity);
@@ -72,11 +74,24 @@ public class StockTransactionServiceImpl implements StockTransactionService {
             applyStockChange(sparePart, request.getTransactionType(), request.getQuantity());
         }
 
-        sparePartRepository.save(sparePart);
+        SparePart savedPart = sparePartRepository.save(sparePart);
+        checkAndPublishLowStock(savedPart);
 
         stockTransactionMapper.updateEntity(request, entity);
         StockTransaction updated = stockTransactionRepository.save(entity);
         return stockTransactionMapper.toResponse(updated);
+    }
+
+    private void checkAndPublishLowStock(SparePart part) {
+        if (part != null && part.getActive() && part.getCurrentStock() <= part.getMinimumStock()) {
+            eventPublisher.publishEvent(new com.yashconsulting.eams.notification.event.LowStockEvent(
+                    part.getId(),
+                    part.getPartNumber(),
+                    part.getPartName(),
+                    part.getCurrentStock(),
+                    part.getMinimumStock()
+            ));
+        }
     }
 
     @Override

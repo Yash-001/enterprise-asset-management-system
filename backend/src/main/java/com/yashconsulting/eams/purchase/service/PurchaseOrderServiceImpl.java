@@ -43,6 +43,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
     private final SparePartRepository sparePartRepository;
     private final StockTransactionService stockTransactionService;
     private final PurchaseOrderMapper purchaseOrderMapper;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -120,9 +121,16 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
         PurchaseOrder updated = purchaseOrderRepository.save(entity);
 
+        if (oldStatus != PurchaseOrderStatus.APPROVED && newStatus == PurchaseOrderStatus.APPROVED) {
+            eventPublisher.publishEvent(new com.yashconsulting.eams.notification.event.PurchaseOrderApprovedEvent(
+                    updated.getId(), updated.getPoNumber(), updated.getCreatedBy()));
+        }
+
         // If transitioned to RECEIVED: automatically increase inventory stock
         if (oldStatus != PurchaseOrderStatus.RECEIVED && newStatus == PurchaseOrderStatus.RECEIVED) {
             receiveInventoryStock(updated);
+            eventPublisher.publishEvent(new com.yashconsulting.eams.notification.event.PurchaseOrderReceivedEvent(
+                    updated.getId(), updated.getPoNumber(), updated.getCreatedBy()));
         }
 
         return purchaseOrderMapper.toResponse(updated);

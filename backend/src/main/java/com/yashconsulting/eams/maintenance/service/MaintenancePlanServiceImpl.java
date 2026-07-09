@@ -39,6 +39,7 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
     private final MaintenancePlanRepository maintenancePlanRepository;
     private final AssetRepository assetRepository;
     private final MaintenancePlanMapper maintenancePlanMapper;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -195,9 +196,11 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
     }
 
     @Override
-    @Transactional(readOnly = true)
+    @Transactional
     public MaintenanceDashboardResponse getMaintenanceDashboard() {
         log.info("Fetching maintenance metrics dashboard data");
+        checkOverdueMaintenance();
+
         LocalDate today = LocalDate.now();
         LocalDate endOf30Days = today.plusDays(30);
 
@@ -237,6 +240,22 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
                 .countByStatus(countByStatus)
                 .countByPriority(countByPriority)
                 .build();
+    }
+
+    @org.springframework.scheduling.annotation.Scheduled(cron = "0 0 1 * * ?")
+    @Transactional
+    public void checkOverdueMaintenance() {
+        log.info("Checking for overdue maintenance plans");
+        LocalDate today = LocalDate.now();
+        List<MaintenancePlan> overduePlans = maintenancePlanRepository.findOverdueMaintenance(today);
+        for (MaintenancePlan plan : overduePlans) {
+            if (plan.getStatus() != MaintenanceStatus.OVERDUE) {
+                plan.setStatus(MaintenanceStatus.OVERDUE);
+                maintenancePlanRepository.save(plan);
+                eventPublisher.publishEvent(new com.yashconsulting.eams.notification.event.MaintenanceOverdueEvent(
+                        plan.getId(), plan.getPlanCode(), plan.getPlanName()));
+            }
+        }
     }
 
     private MaintenancePlan getPlanByIdOrThrow(Long id) {

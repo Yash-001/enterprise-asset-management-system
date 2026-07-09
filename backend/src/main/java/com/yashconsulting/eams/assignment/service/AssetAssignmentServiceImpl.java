@@ -32,6 +32,7 @@ public class AssetAssignmentServiceImpl implements AssetAssignmentService {
     private final AssetAssignmentRepository assetAssignmentRepository;
     private final AssetRepository assetRepository;
     private final AssetAssignmentMapper assetAssignmentMapper;
+    private final org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @Override
     @Transactional
@@ -55,6 +56,10 @@ public class AssetAssignmentServiceImpl implements AssetAssignmentService {
 
         AssetAssignment assignment = assetAssignmentMapper.toEntity(request);
         AssetAssignment saved = assetAssignmentRepository.save(assignment);
+        
+        eventPublisher.publishEvent(new com.yashconsulting.eams.notification.event.AssetAssignedEvent(
+                saved.getAssetId(), asset.getAssetCode(), saved.getEmployeeId()));
+
         return assetAssignmentMapper.toResponse(saved);
     }
 
