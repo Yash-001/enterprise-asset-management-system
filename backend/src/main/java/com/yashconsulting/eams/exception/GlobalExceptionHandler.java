@@ -58,6 +58,13 @@ public class GlobalExceptionHandler {
         return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(WorkOrderNumberAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleWorkOrderNumberAlreadyExistsException(
+            WorkOrderNumberAlreadyExistsException ex, HttpServletRequest request) {
+        log.info("Work order number already exists exception: {}", ex.getMessage());
+        return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
