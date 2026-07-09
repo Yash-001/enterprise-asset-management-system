@@ -104,3 +104,85 @@ To run multiple instances:
 docker compose -f docker-compose.prod.yml up -d --scale app=3
 ```
 Note: Add a reverse proxy (Nginx/Traefik) for load balancing when scaling.
+
+---
+
+## CI/CD Pipeline
+
+### Overview
+
+The project uses GitHub Actions with two workflows:
+
+| Workflow | File | Trigger | Purpose |
+|----------|------|---------|---------|
+| CI - Build & Test | `.github/workflows/ci.yml` | Push/PR to main, develop | Build, test, analyze, Docker build/push |
+| CD - Deploy | `.github/workflows/deploy.yml` | After CI success on main, or manual | Deploy to staging → production |
+
+### CI Pipeline (ci.yml)
+
+```
+Push/PR → Build → Test → Static Analysis → Docker Build & Push
+```
+
+**Jobs:**
+1. **Build & Test** — Compiles, runs tests against PostgreSQL service container
+2. **Static Analysis** — SpotBugs, dependency analysis, outdated dependency check
+3. **Docker Build & Push** — Multi-stage build, push to GitHub Container Registry (only on main/develop push)
+
+### CD Pipeline (deploy.yml)
+
+```
+CI Success → Deploy Staging → Health Check → Deploy Production → Health Check
+```
+
+**Triggers:**
+- Automatically after CI passes on `main`
+- Manually via `workflow_dispatch` (choose staging or production)
+
+**Environments:**
+- `staging` — deployed first, health-checked
+- `production` — deployed after staging succeeds, requires environment approval (configure in GitHub Settings)
+
+### Required GitHub Secrets
+
+| Secret | Description |
+|--------|-------------|
+| `STAGING_HOST` | Staging server IP/hostname |
+| `STAGING_USER` | SSH username for staging |
+| `STAGING_SSH_KEY` | Private SSH key for staging |
+| `PRODUCTION_HOST` | Production server IP/hostname |
+| `PRODUCTION_USER` | SSH username for production |
+| `PRODUCTION_SSH_KEY` | Private SSH key for production |
+
+### Required GitHub Variables
+
+| Variable | Description |
+|----------|-------------|
+| `STAGING_URL` | Staging base URL (e.g., `https://staging.eams.example.com`) |
+| `PRODUCTION_URL` | Production base URL (e.g., `https://eams.example.com`) |
+
+### Server Setup (One-time)
+
+On each deployment server:
+```bash
+# 1. Clone repo or copy docker-compose.prod.yml
+mkdir -p /opt/eams && cd /opt/eams
+
+# 2. Create .env from template
+cp .env.example .env
+# Edit with production values
+
+# 3. Login to GitHub Container Registry
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+
+# 4. Initial deploy
+docker compose -f docker-compose.prod.yml up -d
+```
+
+### Manual Deployment
+
+Trigger a manual deployment from GitHub:
+1. Go to **Actions** → **CD - Deploy**
+2. Click **Run workflow**
+3. Select environment (staging/production)
+4. Click **Run**
