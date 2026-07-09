@@ -7,6 +7,8 @@ import com.yashconsulting.eams.inventory.dto.SparePartUpdateRequest;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
+import com.yashconsulting.eams.inventory.dto.InventoryDashboardResponse;
+
 public interface SparePartService {
 
     SparePartResponse createSparePart(SparePartCreateRequest request);
@@ -20,4 +22,10 @@ public interface SparePartService {
     Page<SparePartResponse> searchSpareParts(SparePartSearchRequest request);
 
     void deleteSparePart(Long id);
+
+    InventoryDashboardResponse getInventoryDashboardMetrics();
+
+    Page<SparePartResponse> getLowStockItems(Pageable pageable);
+
+    Page<SparePartResponse> getOutOfStockItems(Pageable pageable);
 }

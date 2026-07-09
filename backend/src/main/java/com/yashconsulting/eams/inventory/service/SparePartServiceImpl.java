@@ -21,6 +21,12 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.yashconsulting.eams.inventory.dto.InventoryDashboardResponse;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Locale;
 
 @Service
@@ -116,6 +122,58 @@ public class SparePartServiceImpl implements SparePartService {
         SparePart entity = getSparePartOrThrow(id);
         entity.setActive(false);
         sparePartRepository.save(entity);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public InventoryDashboardResponse getInventoryDashboardMetrics() {
+        log.info("Fetching inventory dashboard metrics");
+        BigDecimal stockValuation = sparePartRepository.calculateTotalStockValuation();
+
+        Map<String, Long> countByCategory = convertToMapString(sparePartRepository.countByCategory());
+        Map<Long, Long> countBySupplier = convertToMapLong(sparePartRepository.countBySupplier());
+        Map<Long, Long> countByLocation = convertToMapLong(sparePartRepository.countByLocation());
+
+        return InventoryDashboardResponse.builder()
+                .stockValuation(stockValuation)
+                .countByCategory(countByCategory)
+                .countBySupplier(countBySupplier)
+                .countByLocation(countByLocation)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SparePartResponse> getLowStockItems(Pageable pageable) {
+        log.info("Fetching low stock spare parts page");
+        return sparePartRepository.findLowStockItems(pageable).map(sparePartMapper::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<SparePartResponse> getOutOfStockItems(Pageable pageable) {
+        log.info("Fetching out of stock spare parts page");
+        return sparePartRepository.findOutOfStockItems(pageable).map(sparePartMapper::toResponse);
+    }
+
+    private Map<String, Long> convertToMapString(List<Object[]> results) {
+        Map<String, Long> map = new HashMap<>();
+        for (Object[] row : results) {
+            if (row[0] != null) {
+                map.put(row[0].toString(), (Long) row[1]);
+            }
+        }
+        return map;
+    }
+
+    private Map<Long, Long> convertToMapLong(List<Object[]> results) {
+        Map<Long, Long> map = new HashMap<>();
+        for (Object[] row : results) {
+            if (row[0] != null) {
+                map.put((Long) row[0], (Long) row[1]);
+            }
+        }
+        return map;
     }
 
     private SparePart getSparePartOrThrow(Long id) {

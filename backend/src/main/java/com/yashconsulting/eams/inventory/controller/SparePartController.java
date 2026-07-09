@@ -1,5 +1,6 @@
 package com.yashconsulting.eams.inventory.controller;
 
+import com.yashconsulting.eams.inventory.dto.InventoryDashboardResponse;
 import com.yashconsulting.eams.inventory.dto.SparePartCreateRequest;
 import com.yashconsulting.eams.inventory.dto.SparePartResponse;
 import com.yashconsulting.eams.inventory.dto.SparePartSearchRequest;
@@ -112,6 +113,48 @@ public class SparePartController {
     })
     public ResponseEntity<Page<SparePartResponse>> searchSpareParts(@Valid SparePartSearchRequest request) {
         Page<SparePartResponse> page = sparePartService.searchSpareParts(request);
+        return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/dashboard/metrics")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    @Operation(summary = "Get inventory dashboard aggregate metrics", description = "Retrieves active stock valuation and distribution groupings by category, supplier, and location.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved aggregate metrics",
+                    content = @Content(schema = @Schema(implementation = InventoryDashboardResponse.class))),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<InventoryDashboardResponse> getInventoryDashboardMetrics() {
+        InventoryDashboardResponse response = sparePartService.getInventoryDashboardMetrics();
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/dashboard/low-stock")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    @Operation(summary = "Get low stock spare parts with pagination", description = "Retrieves a pageable list of active spare parts where currentStock <= minimumStock.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved paginated low stock items"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<Page<SparePartResponse>> getLowStockItems(
+            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        Page<SparePartResponse> page = sparePartService.getLowStockItems(pageable);
+        return ResponseEntity.ok(page);
+    }
+
+    @GetMapping("/dashboard/out-of-stock")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER', 'USER')")
+    @Operation(summary = "Get out of stock spare parts with pagination", description = "Retrieves a pageable list of active spare parts where currentStock = 0.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Successfully retrieved paginated out of stock items"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<Page<SparePartResponse>> getOutOfStockItems(
+            @PageableDefault(size = 20, sort = "id") Pageable pageable) {
+        Page<SparePartResponse> page = sparePartService.getOutOfStockItems(pageable);
         return ResponseEntity.ok(page);
     }
 

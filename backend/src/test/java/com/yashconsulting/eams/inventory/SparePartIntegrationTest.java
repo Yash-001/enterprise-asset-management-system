@@ -278,4 +278,109 @@ class SparePartIntegrationTest extends BaseIntegrationTest {
                 .andExpect(jsonPath("$.content", hasSize(1)))
                 .andExpect(jsonPath("$.content[0].partNumber", is("SP-SRCH-B")));
     }
+
+    @Test
+    void whenGetInventoryDashboardMetrics_thenReturnsAggregations() throws Exception {
+        SparePart p1 = SparePart.builder()
+                .partNumber("SP-METRIC-1")
+                .partName("Metric Part 1")
+                .category("Fittings")
+                .supplierId(15L)
+                .locationId(seededLocation.getId())
+                .minimumStock(5)
+                .maximumStock(10)
+                .currentStock(10)
+                .unitCost(BigDecimal.valueOf(15.00))
+                .active(true)
+                .build();
+        sparePartRepository.save(p1);
+
+        SparePart p2 = SparePart.builder()
+                .partNumber("SP-METRIC-2")
+                .partName("Metric Part 2")
+                .category("Filters")
+                .supplierId(20L)
+                .locationId(seededLocation.getId())
+                .minimumStock(5)
+                .maximumStock(10)
+                .currentStock(0)
+                .unitCost(BigDecimal.valueOf(50.00))
+                .active(true)
+                .build();
+        sparePartRepository.save(p2);
+
+        // Total stock valuation of added items: (10 * 15) + (0 * 50) = 150
+        mockMvc.perform(get("/api/v1/spare-parts/dashboard/metrics")
+                        .header("Authorization", "Bearer " + managerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.stockValuation", closeTo(150.00, 0.01)))
+                .andExpect(jsonPath("$.countByCategory.Fittings", is(1)))
+                .andExpect(jsonPath("$.countByCategory.Filters", is(1)))
+                .andExpect(jsonPath("$.countBySupplier.15", is(1)))
+                .andExpect(jsonPath("$.countByLocation." + seededLocation.getId(), is(2)));
+    }
+
+    @Test
+    void whenGetLowStockItems_thenReturnsPaginated() throws Exception {
+        SparePart lowStock = SparePart.builder()
+                .partNumber("SP-LOW-STOCK")
+                .partName("Low Stock Part")
+                .minimumStock(10)
+                .maximumStock(20)
+                .currentStock(4) // 4 <= 10 (low stock)
+                .unitCost(BigDecimal.ONE)
+                .active(true)
+                .build();
+        sparePartRepository.save(lowStock);
+
+        SparePart normalStock = SparePart.builder()
+                .partNumber("SP-NORMAL-STOCK")
+                .partName("Normal Stock Part")
+                .minimumStock(10)
+                .maximumStock(50)
+                .currentStock(25) // 25 > 10 (not low stock)
+                .unitCost(BigDecimal.ONE)
+                .active(true)
+                .build();
+        sparePartRepository.save(normalStock);
+
+        mockMvc.perform(get("/api/v1/spare-parts/dashboard/low-stock")
+                        .header("Authorization", "Bearer " + managerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
+                .andExpect(jsonPath("$.content[*].partNumber", hasItem("SP-LOW-STOCK")))
+                .andExpect(jsonPath("$.content[*].partNumber", not(hasItem("SP-NORMAL-STOCK"))));
+    }
+
+    @Test
+    void whenGetOutOfStockItems_thenReturnsPaginated() throws Exception {
+        SparePart outOfStock = SparePart.builder()
+                .partNumber("SP-OUT-OF-STOCK")
+                .partName("Out of Stock Part")
+                .minimumStock(5)
+                .maximumStock(10)
+                .currentStock(0) // 0 (out of stock)
+                .unitCost(BigDecimal.ONE)
+                .active(true)
+                .build();
+        sparePartRepository.save(outOfStock);
+
+        SparePart instock = SparePart.builder()
+                .partNumber("SP-IN-STOCK")
+                .partName("In Stock Part")
+                .minimumStock(5)
+                .maximumStock(15)
+                .currentStock(10) // 10 (in stock)
+                .unitCost(BigDecimal.ONE)
+                .active(true)
+                .build();
+        sparePartRepository.save(instock);
+
+        mockMvc.perform(get("/api/v1/spare-parts/dashboard/out-of-stock")
+                        .header("Authorization", "Bearer " + managerToken))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content", hasSize(greaterThanOrEqualTo(1))))
+                .andExpect(jsonPath("$.content[*].partNumber", hasItem("SP-OUT-OF-STOCK")))
+                .andExpect(jsonPath("$.content[*].partNumber", not(hasItem("SP-IN-STOCK"))));
+    }
 }
