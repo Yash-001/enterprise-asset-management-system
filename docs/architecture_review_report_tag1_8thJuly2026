@@ -1,0 +1,145 @@
+# Architecture and Code Review Report
+## Enterprise Asset Management System (Backend)
+
+This report details the architectural and code quality audit of the Spring Boot backend project. The review covers Spring Boot best practices, Java 21 features, Spring Security integration, API design, database structures, and overall code design principles.
+
+---
+
+## 🔴 Critical Issues
+
+### 1. Broken Spring Security Authorization (Empty Authorities)
+* **File:** [CustomUserDetails.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/security/CustomUserDetails.java#L19-L21)
+* **Description:** 
+  In `CustomUserDetails.java`, the `getAuthorities()` method is hardcoded to return an empty list:
+  ```java
+  @Override
+  public Collection<? extends GrantedAuthority> getAuthorities() {
+      return List.of();
+  }
+  ```
+  Since `CustomUserDetailsService` wraps the loaded database user in `CustomUserDetails`, all authenticated users will reside in the security context with zero roles or authorities. This completely breaks role-based access control (RBAC), meaning security checks like `@PreAuthorize("hasRole('ADMIN')")` or request matching on roles will silently fail or reject all traffic.
+* **Impact:** High vulnerability. Role checks will be completely ineffective.
+
+### 2. Complete Absence of Endpoint-Level Security Controls
+* **File:** [UserController.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/controller/UserController.java)
+* **Description:** 
+  The controllers do not define any method-level authorization (such as `@PreAuthorize("hasRole('ADMIN')")`). In [SecurityConfig.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/config/SecurityConfig.java#L54-L63), the HTTP rules are configured as:
+  ```java
+  .authorizeHttpRequests(auth -> auth
+          .requestMatchers("/api/v1/auth/**", ...).permitAll()
+          .anyRequest().authenticated()
+  )
+  ```
+  This permits any authenticated user—regardless of role (e.g., standard `USER`)—full CRUD permissions on the user management endpoints. A standard user can list, update, and soft-delete user records (including admins).
+* **Impact:** Critical privilege escalation vulnerability.
+
+### 3. Missing Role Administration & Seeding Capabilities
+* **Files:** [UserCreateRequest.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/dto/UserCreateRequest.java), [UserUpdateRequest.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/dto/UserUpdateRequest.java), and Flyway SQL migrations.
+* **Description:** 
+  The `UserCreateRequest` and `UserUpdateRequest` DTOs omit the `role` field. Consequently, any user created through the public API is default-assigned the `USER` role. Additionally, there are no Flyway database seed scripts (e.g. in [V1__Initial_Schema.sql](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/resources/db/migration/V1__Initial_Schema.sql)) to provision an initial administrator account. Because of this, it is currently impossible to log in as an `ADMIN` or `MANAGER` without manual SQL database intervention.
+* **Impact:** Inoperable administrative state out-of-the-box.
+
+---
+
+## 🟠 High Priority Improvements
+
+### 1. Hardcoded Credentials and Secrets in Properties
+* **File:** [application.properties](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/resources/application.properties#L8-L10) and [#L31](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/resources/application.properties#L31)
+* **Description:** 
+  Sensitive credentials (the base64-encoded `jwt.secret` and database `spring.datasource.password`) are committed in plain text inside source control. If this repository is shared or pushed to a public server, the credentials are compromised.
+* **Recommendation:** Externalize secrets using environment variables (e.g., `jwt.secret=${JWT_SECRET}`) or a secret management service.
+
+### 2. Uncaught JWT Exceptions in Filter Chain (HTTP 500 Responses)
+* **File:** [JwtAuthenticationFilter.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/security/JwtAuthenticationFilter.java#L42)
+* **Description:** 
+  Inside the security filter, `jwtTokenProvider.extractUsername(jwt)` is invoked directly. If a token is expired, tampered with, or malformed, the JWT library will throw a subclass of `JwtException` (e.g., `ExpiredJwtException`, `SignatureException`). Because this logic is not wrapped in a `try-catch` block, the exception escapes the filter chain, forcing the servlet container to respond with an HTTP 500 Internal Server Error instead of a correct HTTP 401 Unauthorized status.
+* **Recommendation:** Wrap token validation in a try-catch block and write a clean JSON error response or delegate it to the `HandlerExceptionResolver`.
+
+### 3. Soft-Delete Bypass in Service Retrieval
+* **File:** [UserServiceImpl.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/service/UserServiceImpl.java#L116-L119)
+* **Description:** 
+  The codebase implements soft-delete by setting `active = false`. However, `getUserByIdOrThrow(id)` retrieves the user via `userRepository.findById(id)` rather than using the repository's custom `userRepository.findByIdAndActiveTrue(id)`. This allows clients to retrieve, edit, and interact with deactivated/deleted users. Furthermore, `getAllUsers` uses `findAll` without filtering out inactive records.
+* **Recommendation:** Update `getUserByIdOrThrow` and list methods to query only active users, or use Hibernate `@SQLRestriction("active = true")` on the `User` entity to filter soft-deleted rows transparently.
+
+### 4. Swallowed Exceptions / Missing Backend Logging
+* **File:** [GlobalExceptionHandler.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/exception/GlobalExceptionHandler.java#L38-L42)
+* **Description:** 
+  In the catch-all handler for `Exception.class`, the exception is swallowed, and a generic error response is returned to the user without writing any stack traces or warnings to the application log. Troubleshooting live application errors or database connectivity issues will be impossible.
+* **Recommendation:** Add logging using SLF4J (e.g. `@Slf4j` from Lombok) to log standard exception stack traces (`log.error("An unexpected error occurred", ex)`).
+
+---
+
+## 🟡 Medium Priority Improvements
+
+### 1. Database Round-Trips on Every API Call (Performance)
+* **File:** [JwtAuthenticationFilter.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/security/JwtAuthenticationFilter.java#L45)
+* **Description:** 
+  The filter executes `userDetailsService.loadUserByUsername(userEmail)` for every authenticated request. This triggers a synchronous database query to retrieve user details from Postgres. This creates a severe performance bottleneck.
+* **Recommendation:** Store basic security context (like the user's role and active state) as custom claims inside the signed JWT. Since the JWT is signed with a secret, the filter can parse and trust the authorities in the token without querying the database for every single request, or implement caching.
+
+### 2. Missing Java 21 Record Classes (DTO Modernization)
+* **Files:** All DTO classes (e.g. [LoginRequest.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/auth/dto/LoginRequest.java), [UserResponse.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/dto/UserResponse.java)) and exception schemas.
+* **Description:** 
+  DTOs are currently defined as traditional classes annotated with Lombok boilerplate (`@Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder`). In Java 21, immutable data carriers should be defined as `record` classes, eliminating Lombok code generator overhead, improving type safety, and ensuring immutability.
+* **Recommendation:** Convert DTO structures to Java 21 `record` classes.
+
+### 3. Redundant Public Path Bypass Duplication
+* **Files:** [SecurityConfig.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/config/SecurityConfig.java#L55-L61) and [JwtAuthenticationFilter.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/security/JwtAuthenticationFilter.java#L61-L68)
+* **Description:** 
+  The list of permitAll endpoints (like `/api/v1/auth/**` and swagger paths) is defined twice. Overriding `shouldNotFilter` in the JWT filter is unnecessary because the filter already early-returns when the `Authorization` header is missing. Keeping this method introduces a maintenance hazard (e.g. adding a public URL in the security config but forgetting the filter's method).
+* **Recommendation:** Remove `shouldNotFilter` entirely from the JWT filter class and let Spring Security's request matchers manage authentication bypass.
+
+### 4. Virtual Threads Disabled (Java 21 Thread Optimization)
+* **File:** [application.properties](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/resources/application.properties)
+* **Description:** 
+  The project runs on Java 21 and Spring Boot 3.x, but does not take advantage of Virtual Threads. Without configuration, Spring Boot defaults to a platform-based pool of 200 threads.
+* **Recommendation:** Enable virtual threads by adding `spring.threads.virtual.enabled=true` in `application.properties`. This allows the server to handle thousands of concurrent requests with minimal memory overhead.
+
+### 5. Missing Swagger UI Security Schemes
+* **File:** [OpenApiConfig.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/config/OpenApiConfig.java)
+* **Description:** 
+  The OpenAPI setup does not configure security definitions. As a result, Swagger UI lacks an "Authorize" option, which prevents developers and QA teams from testing authenticated endpoints (like `/api/v1/users`) from the browser.
+* **Recommendation:** Define a `SecurityScheme` of type HTTP Bearer JWT and apply a global `SecurityRequirement` to the `OpenAPI` Bean.
+
+### 6. Manual DTO Mapping Boilerplate
+* **File:** [UserMapper.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/mapper/UserMapper.java)
+* **Description:** 
+  Mappings between entities and DTOs are written manually. This increases boilerplate and is error-prone (fields added to the database model can easily be missed in manual mapping code).
+* **Recommendation:** Adopt MapStruct. Mappers can be defined as interfaces, and implementation classes will be automatically generated during compilation.
+
+---
+
+## 🟢 Low Priority Improvements
+
+### 1. Inefficient Hibernate SQL Logging
+* **File:** [application.properties](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/resources/application.properties#L17)
+* **Description:** 
+  `spring.jpa.show-sql=true` forces Hibernate to print SQL scripts directly to standard out (`System.out`). This is a synchronous, blocking process that degrades performance under load.
+* **Recommendation:** Turn off `spring.jpa.show-sql` and instead use standard log settings: `logging.level.org.hibernate.SQL=DEBUG` or configure a dedicated logging framework.
+
+### 2. Missing Database Query Indexes
+* **File:** [V1__Initial_Schema.sql](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/resources/db/migration/V1__Initial_Schema.sql)
+* **Description:** 
+  The users table has a unique index on `email`, but no indexes on other frequently queried fields like `first_name`, `last_name`, and `active`. The dynamic search query will execute slow table scans as the dataset grows.
+* **Recommendation:** Add indices to these columns in a new Flyway migration.
+
+### 3. Redundant UserDetails implementations (Layered Architecture coupling)
+* **File:** [User.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/entity/User.java#L23)
+* **Description:** 
+  Having the database entity class `User` implement `UserDetails` violates layered architecture principles. It couples the JPA layer directly with Spring Security details.
+* **Recommendation:** Keep the `User` entity clean of framework interfaces. The security details should be handled solely by a separate wrapper (such as `CustomUserDetails` but correctly passing authorities).
+
+### 4. Unused Method in Repository (Dead Code)
+* **File:** [UserRepository.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/repository/UserRepository.java#L19)
+* **Description:** 
+  `existsByEmailAndIdNot` is defined in `UserRepository` but is not referenced anywhere in the services or controller layers (since email updates are blocked).
+* **Recommendation:** Remove unused methods to maintain clean repositories.
+
+### 5. Lack of Validation on Path Variables
+* **File:** [UserController.java](file:///c:/Users/YashRanjan/Desktop/Software%20Consulting/03_Projects/enterprise-asset-management-system/backend/src/main/java/com/yashconsulting/eams/user/controller/UserController.java#L58)
+* **Description:** 
+  API paths (such as `/{id}`) accept a generic `Long` without validating bounds. Bad requests (like `/api/v1/users/-1`) propagate down to the database before failing.
+* **Recommendation:** Add `@Validated` to the Controller class and apply validation annotations like `@Min(1)` on path parameters.
+
+---
+*Report compiled by Senior Java Architect.*
