@@ -7,6 +7,7 @@ import com.yashconsulting.eams.maintenance.dto.MaintenancePlanCreateRequest;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanResponse;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanSearchRequest;
 import com.yashconsulting.eams.maintenance.dto.MaintenancePlanUpdateRequest;
+import com.yashconsulting.eams.maintenance.entity.FrequencyType;
 import com.yashconsulting.eams.maintenance.entity.MaintenancePlan;
 import com.yashconsulting.eams.maintenance.mapper.MaintenancePlanMapper;
 import com.yashconsulting.eams.maintenance.repository.MaintenancePlanRepository;
@@ -110,6 +111,43 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
         MaintenancePlan plan = getPlanByIdOrThrow(id);
         plan.setActive(false);
         maintenancePlanRepository.save(plan);
+    }
+
+    @Override
+    @Transactional
+    public MaintenancePlanResponse completeMaintenancePlan(Long id, java.time.LocalDate completionDate) {
+        log.info("Completing maintenance plan with ID: {} on date: {}", id, completionDate);
+        MaintenancePlan plan = getPlanByIdOrThrow(id);
+
+        java.time.LocalDate actualCompletionDate = completionDate != null ? completionDate : java.time.LocalDate.now();
+        plan.setLastMaintenanceDate(actualCompletionDate);
+
+        java.time.LocalDate nextDate = calculateNextMaintenanceDate(actualCompletionDate, plan.getFrequencyType(), plan.getFrequencyValue());
+        plan.setNextMaintenanceDate(nextDate);
+
+        MaintenancePlan updated = maintenancePlanRepository.save(plan);
+        return maintenancePlanMapper.toResponse(updated);
+    }
+
+    public java.time.LocalDate calculateNextMaintenanceDate(java.time.LocalDate completionDate, FrequencyType frequencyType, int frequencyValue) {
+        if (completionDate == null || frequencyType == null) {
+            throw new IllegalArgumentException("Completion date and frequency type must not be null");
+        }
+        if (frequencyValue <= 0) {
+            throw new IllegalArgumentException("Frequency value must be a positive integer");
+        }
+        switch (frequencyType) {
+            case DAILY:
+                return completionDate.plusDays(frequencyValue);
+            case WEEKLY:
+                return completionDate.plusWeeks(frequencyValue);
+            case MONTHLY:
+                return completionDate.plusMonths(frequencyValue);
+            case YEARLY:
+                return completionDate.plusYears(frequencyValue);
+            default:
+                throw new IllegalArgumentException("Unsupported frequency type: " + frequencyType);
+        }
     }
 
     private MaintenancePlan getPlanByIdOrThrow(Long id) {

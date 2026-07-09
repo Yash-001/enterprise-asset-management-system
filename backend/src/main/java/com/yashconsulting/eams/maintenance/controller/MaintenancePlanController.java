@@ -130,4 +130,24 @@ public class MaintenancePlanController {
         maintenancePlanService.deleteMaintenancePlan(id);
         return ResponseEntity.noContent().build();
     }
+
+    @PostMapping("/{id}/complete")
+    @PreAuthorize("hasAnyRole('ADMIN', 'MANAGER')")
+    @Operation(summary = "Mark maintenance plan as completed", description = "Calculates next scheduled date based on the completion date and frequency, updating the record.")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Maintenance plan completed and rescheduled successfully",
+                    content = @Content(schema = @Schema(implementation = MaintenancePlanResponse.class))),
+            @ApiResponse(responseCode = "400", description = "Invalid completion date or details"),
+            @ApiResponse(responseCode = "404", description = "Maintenance plan not found"),
+            @ApiResponse(responseCode = "401", description = "Unauthorized"),
+            @ApiResponse(responseCode = "403", description = "Forbidden")
+    })
+    public ResponseEntity<MaintenancePlanResponse> completeMaintenancePlan(
+            @Parameter(description = "ID of the maintenance plan to complete", example = "1")
+            @PathVariable Long id,
+            @Parameter(description = "Actual completion date (defaults to today if omitted)", example = "2026-07-09")
+            @RequestParam(required = false) java.time.LocalDate completionDate) {
+        MaintenancePlanResponse response = maintenancePlanService.completeMaintenancePlan(id, completionDate);
+        return ResponseEntity.ok(response);
+    }
 }

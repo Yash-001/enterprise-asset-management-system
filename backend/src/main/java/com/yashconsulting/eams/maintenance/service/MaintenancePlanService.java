@@ -20,4 +20,6 @@ public interface MaintenancePlanService {
     Page<MaintenancePlanResponse> searchMaintenancePlans(MaintenancePlanSearchRequest request);
 
     void deleteMaintenancePlan(Long id);
+
+    MaintenancePlanResponse completeMaintenancePlan(Long id, java.time.LocalDate completionDate);
 }
