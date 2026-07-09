@@ -51,6 +51,13 @@ public class GlobalExceptionHandler {
         return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(MaintenancePlanCodeAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleMaintenancePlanCodeAlreadyExistsException(
+            MaintenancePlanCodeAlreadyExistsException ex, HttpServletRequest request) {
+        log.info("Maintenance plan code already exists exception: {}", ex.getMessage());
+        return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
