@@ -8,6 +8,8 @@ import com.yashconsulting.eams.asset.entity.Asset;
 import com.yashconsulting.eams.asset.mapper.AssetMapper;
 import com.yashconsulting.eams.asset.repository.AssetRepository;
 import com.yashconsulting.eams.asset.specification.AssetSpecification;
+import com.yashconsulting.eams.audit.annotation.Auditable;
+import com.yashconsulting.eams.audit.entity.AuditAction;
 import com.yashconsulting.eams.exception.AssetCodeAlreadyExistsException;
 import com.yashconsulting.eams.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     @Transactional
+    @Auditable(entity = "Asset", action = AuditAction.CREATE)
     public AssetResponse createAsset(AssetCreateRequest request) {
         String sanitizedAssetCode = request.getAssetCode().trim().toUpperCase(Locale.ROOT);
 
@@ -46,6 +49,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     @Transactional
+    @Auditable(entity = "Asset", action = AuditAction.UPDATE)
     public AssetResponse updateAsset(Long id, AssetUpdateRequest request) {
         Asset asset = getAssetByIdOrThrow(id);
 
@@ -107,6 +111,7 @@ public class AssetServiceImpl implements AssetService {
 
     @Override
     @Transactional
+    @Auditable(entity = "Asset", action = AuditAction.DELETE)
     public void deleteAsset(Long id) {
         Asset asset = getAssetByIdOrThrow(id);
 

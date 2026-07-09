@@ -2,6 +2,8 @@ package com.yashconsulting.eams.user.service;
 
 import com.yashconsulting.eams.exception.EmailAlreadyExistsException;
 import com.yashconsulting.eams.exception.ResourceNotFoundException;
+import com.yashconsulting.eams.audit.annotation.Auditable;
+import com.yashconsulting.eams.audit.entity.AuditAction;
 import com.yashconsulting.eams.user.dto.UserCreateRequest;
 import com.yashconsulting.eams.user.dto.UserResponse;
 import com.yashconsulting.eams.user.dto.UserUpdateRequest;
@@ -32,6 +34,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @Auditable(entity = "User", action = AuditAction.CREATE)
     public UserResponse createUser(UserCreateRequest request) {
         String sanitizedEmail = request.getEmail().trim().toLowerCase(Locale.ROOT);
         
@@ -49,6 +52,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @Auditable(entity = "User", action = AuditAction.UPDATE)
     public UserResponse updateUser(Long id, UserUpdateRequest request) {
         User user = getUserByIdOrThrow(id);
 

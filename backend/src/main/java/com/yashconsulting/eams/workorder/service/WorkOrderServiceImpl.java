@@ -1,6 +1,8 @@
 package com.yashconsulting.eams.workorder.service;
 
 import com.yashconsulting.eams.asset.repository.AssetRepository;
+import com.yashconsulting.eams.audit.annotation.Auditable;
+import com.yashconsulting.eams.audit.entity.AuditAction;
 import com.yashconsulting.eams.exception.ResourceNotFoundException;
 import com.yashconsulting.eams.exception.WorkOrderNumberAlreadyExistsException;
 import com.yashconsulting.eams.maintenance.repository.MaintenancePlanRepository;
@@ -38,6 +40,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Override
     @Transactional
+    @Auditable(entity = "WorkOrder", action = AuditAction.CREATE)
     public WorkOrderResponse createWorkOrder(WorkOrderCreateRequest request) {
         log.info("Creating new work order: {}", request.getWorkOrderNumber());
 
@@ -70,6 +73,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Override
     @Transactional
+    @Auditable(entity = "WorkOrder", action = AuditAction.UPDATE)
     public WorkOrderResponse updateWorkOrder(Long id, WorkOrderUpdateRequest request) {
         log.info("Updating work order with ID: {}", id);
         WorkOrder entity = getWorkOrderOrThrow(id);
@@ -132,6 +136,7 @@ public class WorkOrderServiceImpl implements WorkOrderService {
 
     @Override
     @Transactional
+    @Auditable(entity = "WorkOrder", action = AuditAction.DELETE)
     public void deleteWorkOrder(Long id) {
         log.info("Soft deleting work order with ID: {}", id);
         WorkOrder entity = getWorkOrderOrThrow(id);

@@ -2,6 +2,8 @@ package com.yashconsulting.eams.purchase.service;
 
 import com.yashconsulting.eams.exception.ResourceNotFoundException;
 import com.yashconsulting.eams.exception.PurchaseOrderNumberAlreadyExistsException;
+import com.yashconsulting.eams.audit.annotation.Auditable;
+import com.yashconsulting.eams.audit.entity.AuditAction;
 import com.yashconsulting.eams.inventory.dto.StockTransactionCreateRequest;
 import com.yashconsulting.eams.inventory.entity.StockTransactionType;
 import com.yashconsulting.eams.inventory.repository.SparePartRepository;
@@ -47,6 +49,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     @Transactional
+    @Auditable(entity = "PurchaseOrder", action = AuditAction.CREATE)
     public PurchaseOrderResponse createPurchaseOrder(PurchaseOrderCreateRequest request) {
         log.info("Creating purchase order: {}", request.getPoNumber());
 
@@ -79,6 +82,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     @Transactional
+    @Auditable(entity = "PurchaseOrder", action = AuditAction.UPDATE)
     public PurchaseOrderResponse updatePurchaseOrder(Long id, PurchaseOrderUpdateRequest request) {
         log.info("Updating purchase order with ID: {}", id);
         PurchaseOrder entity = getPurchaseOrderOrThrow(id);
@@ -176,6 +180,7 @@ public class PurchaseOrderServiceImpl implements PurchaseOrderService {
 
     @Override
     @Transactional
+    @Auditable(entity = "PurchaseOrder", action = AuditAction.DELETE)
     public void deletePurchaseOrder(Long id) {
         log.info("Soft deleting purchase order with ID: {}", id);
         PurchaseOrder entity = getPurchaseOrderOrThrow(id);

@@ -2,6 +2,8 @@ package com.yashconsulting.eams.inventory.service;
 
 import com.yashconsulting.eams.exception.ResourceNotFoundException;
 import com.yashconsulting.eams.exception.SparePartNumberAlreadyExistsException;
+import com.yashconsulting.eams.audit.annotation.Auditable;
+import com.yashconsulting.eams.audit.entity.AuditAction;
 import com.yashconsulting.eams.location.repository.LocationRepository;
 import com.yashconsulting.eams.inventory.dto.SparePartCreateRequest;
 import com.yashconsulting.eams.inventory.dto.SparePartResponse;
@@ -41,6 +43,7 @@ public class SparePartServiceImpl implements SparePartService {
 
     @Override
     @Transactional
+    @Auditable(entity = "SparePart", action = AuditAction.CREATE)
     public SparePartResponse createSparePart(SparePartCreateRequest request) {
         log.info("Creating new spare part: {}", request.getPartNumber());
 
@@ -65,6 +68,7 @@ public class SparePartServiceImpl implements SparePartService {
 
     @Override
     @Transactional
+    @Auditable(entity = "SparePart", action = AuditAction.UPDATE)
     public SparePartResponse updateSparePart(Long id, SparePartUpdateRequest request) {
         log.info("Updating spare part with ID: {}", id);
         SparePart entity = getSparePartOrThrow(id);
@@ -132,6 +136,7 @@ public class SparePartServiceImpl implements SparePartService {
 
     @Override
     @Transactional
+    @Auditable(entity = "SparePart", action = AuditAction.DELETE)
     public void deleteSparePart(Long id) {
         log.info("Soft deleting spare part with ID: {}", id);
         SparePart entity = getSparePartOrThrow(id);
