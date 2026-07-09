@@ -72,6 +72,13 @@ public class GlobalExceptionHandler {
         return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
     }
 
+    @ExceptionHandler(VendorCodeAlreadyExistsException.class)
+    public ResponseEntity<ErrorResponse> handleVendorCodeAlreadyExistsException(
+            VendorCodeAlreadyExistsException ex, HttpServletRequest request) {
+        log.info("Vendor code already exists exception: {}", ex.getMessage());
+        return buildResponseEntity(HttpStatus.CONFLICT, ex.getMessage(), request);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorResponse> handleIllegalArgumentException(
             IllegalArgumentException ex, HttpServletRequest request) {
