@@ -242,7 +242,6 @@ public class MaintenancePlanServiceImpl implements MaintenancePlanService {
                 .build();
     }
 
-    @org.springframework.scheduling.annotation.Scheduled(cron = "0 0 1 * * ?")
     @Transactional
     public void checkOverdueMaintenance() {
         log.info("Checking for overdue maintenance plans");

@@ -26,4 +26,7 @@ public interface WorkOrderRepository extends JpaRepository<WorkOrder, Long>, Jpa
 
     @Query("SELECT COUNT(wo) FROM WorkOrder wo WHERE wo.active = true AND wo.status IN (com.yashconsulting.eams.workorder.entity.WorkOrderStatus.REQUESTED, com.yashconsulting.eams.workorder.entity.WorkOrderStatus.ASSIGNED, com.yashconsulting.eams.workorder.entity.WorkOrderStatus.IN_PROGRESS)")
     long countOpenWorkOrders();
+
+    @Query("SELECT wo FROM WorkOrder wo WHERE wo.active = true AND wo.scheduledDate < :today AND wo.status IN (com.yashconsulting.eams.workorder.entity.WorkOrderStatus.REQUESTED, com.yashconsulting.eams.workorder.entity.WorkOrderStatus.ASSIGNED, com.yashconsulting.eams.workorder.entity.WorkOrderStatus.IN_PROGRESS)")
+    java.util.List<WorkOrder> findOverdueWorkOrders(@org.springframework.data.repository.query.Param("today") java.time.LocalDate today);
 }
