@@ -1,14 +1,5 @@
 /**
- * Generic API response wrapper.
- */
-export interface ApiResponse<T> {
-  data: T
-  success: boolean
-  message?: string
-}
-
-/**
- * Paginated response from Spring Boot.
+ * Standard Spring Boot paginated response.
  */
 export interface PageResponse<T> {
   content: T[]
@@ -18,32 +9,55 @@ export interface PageResponse<T> {
   size: number
   first: boolean
   last: boolean
+  empty: boolean
 }
 
 /**
- * Backend error response shape.
+ * Spring Boot error response shape (from GlobalExceptionHandler).
  */
 export interface ApiErrorResponse {
+  timestamp: string
   status: number
   error: string
   message: string
   path: string
-  timestamp: string
 }
 
 /**
- * Validation error response.
+ * Login response from /api/v1/auth/login.
  */
-export interface ValidationErrorResponse {
-  errors: Record<string, string[]>
+export interface LoginResponse {
+  accessToken: string
+  tokenType: string
+  expiresIn: number
 }
 
 /**
- * Pagination query params.
+ * Login request payload.
  */
-export interface PaginationParams {
-  page?: number
-  size?: number
-  sortBy?: string
-  sortDirection?: 'ASC' | 'DESC'
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+/**
+ * Register request payload.
+ */
+export interface RegisterRequest {
+  firstName: string
+  lastName: string
+  email: string
+  password: string
+}
+
+/**
+ * Decoded JWT payload claims.
+ */
+export interface JwtPayload {
+  sub: string
+  role: string
+  firstName: string
+  lastName: string
+  iat: number
+  exp: number
 }
