@@ -1,0 +1,42 @@
+export const ROUTE_NAMES = {
+  LOGIN: 'login',
+  REGISTER: 'register',
+  DASHBOARD: 'dashboard',
+  ASSETS: 'assets',
+  ASSET_CREATE: 'asset-create',
+  ASSET_EDIT: 'asset-edit',
+  ASSET_DETAIL: 'asset-detail',
+  WORK_ORDERS: 'work-orders',
+  MAINTENANCE: 'maintenance',
+  INVENTORY: 'inventory',
+  PURCHASE_ORDERS: 'purchase-orders',
+  VENDORS: 'vendors',
+  DEPARTMENTS: 'departments',
+  LOCATIONS: 'locations',
+  NOTIFICATIONS: 'notifications',
+  DOCUMENTS: 'documents',
+  AUDIT_LOGS: 'audit-logs',
+  REPORTS: 'reports',
+  USERS: 'users',
+  FORBIDDEN: 'forbidden',
+  NOT_FOUND: 'not-found'
+} as const
+
+export const ROUTE_PATHS = {
+  LOGIN: '/login',
+  REGISTER: '/register',
+  DASHBOARD: '/dashboard',
+  ASSETS: '/assets',
+  WORK_ORDERS: '/work-orders',
+  MAINTENANCE: '/maintenance',
+  INVENTORY: '/inventory',
+  PURCHASE_ORDERS: '/purchase-orders',
+  VENDORS: '/vendors',
+  DEPARTMENTS: '/departments',
+  LOCATIONS: '/locations',
+  NOTIFICATIONS: '/notifications',
+  DOCUMENTS: '/documents',
+  AUDIT_LOGS: '/audit-logs',
+  REPORTS: '/reports',
+  USERS: '/users'
+} as const
