@@ -1,3 +1,4 @@
-export { default as apiClient } from './axios'
-export { ENDPOINTS } from './endpoints'
+export { default as axiosInstance } from './axios'
 export { setupInterceptors } from './interceptors'
+export { ENDPOINTS } from './endpoints'
+export { ApiClient, apiClient } from './api-client'

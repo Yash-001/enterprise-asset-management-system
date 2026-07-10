@@ -1,32 +1,54 @@
-import apiClient from './axios'
-import { STORAGE_KEYS } from '@/shared/constants/storage.constants'
+import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
+import axiosInstance from './axios'
+import { STORAGE_KEYS, API_CONSTANTS } from '@/shared/constants'
+import { eventBus } from '@/shared/services'
+import { logger } from '@/shared/utils'
 
 /**
- * Setup Axios interceptors for auth and error handling.
+ * Setup request and response interceptors on the Axios instance.
+ * Call once during app initialization.
  */
 export function setupInterceptors(): void {
-  // Request: Attach JWT
-  apiClient.interceptors.request.use(
-    (config) => {
+  // ─── Request Interceptor ────────────────────────────────────────────────
+  axiosInstance.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
       const token = localStorage.getItem(STORAGE_KEYS.ACCESS_TOKEN)
-      if (token) {
-        config.headers.Authorization = `Bearer ${token}`
+      if (token && config.headers) {
+        config.headers[API_CONSTANTS.HEADERS.AUTHORIZATION] = `Bearer ${token}`
       }
       return config
     },
-    (error) => Promise.reject(error)
+    (error: AxiosError) => {
+      logger.error('Request interceptor error:', error.message)
+      return Promise.reject(error)
+    }
   )
 
-  // Response: Global error handling
-  apiClient.interceptors.response.use(
+  // ─── Response Interceptor ───────────────────────────────────────────────
+  axiosInstance.interceptors.response.use(
     (response) => response,
-    (error) => {
+    (error: AxiosError) => {
       const status = error.response?.status
 
-      if (status === 401) {
-        localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
-        localStorage.removeItem(STORAGE_KEYS.USER)
-        window.location.href = '/login'
+      switch (status) {
+        case API_CONSTANTS.STATUS.UNAUTHORIZED:
+          logger.warn('401 Unauthorized — session expired')
+          localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
+          localStorage.removeItem(STORAGE_KEYS.USER)
+          localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRY)
+          eventBus.emit('SESSION_EXPIRED')
+          break
+
+        case API_CONSTANTS.STATUS.FORBIDDEN:
+          logger.warn('403 Forbidden — insufficient permissions')
+          break
+
+        case API_CONSTANTS.STATUS.INTERNAL_ERROR:
+          logger.error('500 Internal Server Error:', error.message)
+          break
+
+        default:
+          break
       }
 
       return Promise.reject(error)
