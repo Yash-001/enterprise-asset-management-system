@@ -1,16 +1,17 @@
 import { createApp } from 'vue'
-import { createPinia } from 'pinia'
 import App from './App.vue'
-import router from './router'
-import { primeVuePlugin } from './plugins/primevue'
+import { registerPlugins } from './plugins'
+import { setupInterceptors } from './api'
 
 import 'primeicons/primeicons.css'
 import './styles/main.scss'
 
 const app = createApp(App)
 
-app.use(createPinia())
-app.use(router)
-app.use(primeVuePlugin)
+// Register all plugins (Pinia, Router, PrimeVue, Toast, Confirm, Components)
+registerPlugins(app)
+
+// Setup Axios interceptors (JWT attach, 401 handling)
+setupInterceptors()
 
 app.mount('#app')
