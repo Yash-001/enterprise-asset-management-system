@@ -1,22 +1,75 @@
 version: "3.9"
 
 services:
+  # ============================
+  # PostgreSQL Database
+  # ============================
   postgres:
-    image: postgres:17
-    container_name: eam-postgres
-
+    image: postgres:17-alpine
+    container_name: eams-postgres-dev
     restart: unless-stopped
-
     environment:
-      POSTGRES_DB: enterprise_asset_management
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-
+      POSTGRES_DB: ${DB_NAME:-enterprise_asset_management}
+      POSTGRES_USER: ${DB_USERNAME:-postgres}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     ports:
-      - "5432:5432"
-
+      - "${DB_PORT:-5432}:5432"
     volumes:
-      - postgres-data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-postgres} -d ${DB_NAME:-enterprise_asset_management}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    networks:
+      - eams-dev
+
+  # ============================
+  # Spring Boot Application
+  # ============================
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: eams-app-dev
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      SPRING_PROFILES_ACTIVE: dev
+      DB_URL: jdbc:postgresql://postgres:5432/${DB_NAME:-enterprise_asset_management}
+      DB_USERNAME: ${DB_USERNAME:-postgres}
+      DB_PASSWORD: ${DB_PASSWORD:-postgres}
+      JWT_SECRET: ${JWT_SECRET:-MzRjYjVkNmU3YzhhOWI0ZTEwZjJhM2M1ZTZiN2Q4ZTkxMGExMmIzYzRkNWU2ZjdhOGI5YzBkMWUyZjNhNGI1Yw==}
+      JWT_EXPIRATION: ${JWT_EXPIRATION:-24h}
+      MAIL_HOST: ${MAIL_HOST:-localhost}
+      MAIL_PORT: ${MAIL_PORT:-1025}
+      STORAGE_PATH: /app/uploads
+    ports:
+      - "${APP_PORT:-8080}:8080"
+    volumes:
+      - uploads_data:/app/uploads
+      - logs_data:/var/log/eams
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:8080/management/health"]
+      interval: 30s
+      timeout: 10s
+      start_period: 60s
+      retries: 3
+    networks:
+      - eams-dev
 
 volumes:
-  postgres-data:
+  postgres_data:
+    name: eams_postgres_data
+  uploads_data:
+    name: eams_uploads_data
+  logs_data:
+    name: eams_logs_data
+
+networks:
+  eams-dev:
+    name: eams-dev-network
+    driver: bridge
