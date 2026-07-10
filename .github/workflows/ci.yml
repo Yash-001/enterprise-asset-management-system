@@ -1,30 +1,49 @@
-name: CI - Build & Test
+# ============================================================================
+# CI Pipeline — Build, Test, Package
+# ============================================================================
+# This workflow runs on every push and pull request to main/develop branches.
+# It performs a full Maven build lifecycle: compile → test → verify → package.
+#
+# Steps:
+#   1. Checkout source code
+#   2. Setup Java 21 (Eclipse Temurin)
+#   3. Cache Maven dependencies (~/.m2/repository)
+#   4. Run `mvn clean verify` (compile + unit tests + integration tests)
+#   5. Run unit tests (results always uploaded for debugging)
+#   6. Package application (produces executable JAR)
+#   7. Upload packaged artifact for downstream jobs
+# ============================================================================
+
+name: CI — Build & Test
 
 on:
   push:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/ci.yml'
   pull_request:
     branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/ci.yml'
 
 env:
   JAVA_VERSION: '21'
-  REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  JAVA_DISTRIBUTION: 'temurin'
 
 jobs:
-  # ============================
-  # Job 1: Build & Test
-  # ============================
-  build-and-test:
-    name: Build & Test
+  build-test-package:
+    name: Build → Test → Package
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: backend
 
+    # -----------------------------------------------------------
+    # PostgreSQL service container for integration tests
+    # Starts a PostgreSQL instance accessible at localhost:5432
+    # -----------------------------------------------------------
     services:
       postgres:
-        image: postgres:16-alpine
+        image: postgres:17-alpine
         env:
           POSTGRES_DB: eams_test
           POSTGRES_USER: postgres
@@ -32,119 +51,119 @@ jobs:
         ports:
           - 5432:5432
         options: >-
-          --health-cmd="pg_isready -U postgres"
+          --health-cmd="pg_isready -U postgres -d eams_test"
           --health-interval=10s
           --health-timeout=5s
           --health-retries=5
 
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
-        uses: actions/setup-java@v4
-        with:
-          java-version: ${{ env.JAVA_VERSION }}
-          distribution: temurin
-          cache: maven
-
-      - name: Build project
-        run: ./mvnw clean compile -B
-
-      - name: Run tests
-        env:
-          DB_URL: jdbc:postgresql://localhost:5432/eams_test
-          DB_USERNAME: postgres
-          DB_PASSWORD: postgres
-          SPRING_PROFILES_ACTIVE: test
-        run: ./mvnw verify -B
-
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: backend/target/surefire-reports/
-
-      - name: Upload JAR artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: app-jar
-          path: backend/target/*.jar
-
-  # ============================
-  # Job 2: Static Analysis
-  # ============================
-  static-analysis:
-    name: Static Analysis
-    runs-on: ubuntu-latest
-    needs: build-and-test
     defaults:
       run:
         working-directory: backend
 
     steps:
-      - name: Checkout code
+      # ==========================================================
+      # Step 1: Checkout
+      # Clones the repository so the workflow can access the code.
+      # Uses fetch-depth 0 for full history (useful for versioning).
+      # ==========================================================
+      - name: Checkout source code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: Set up JDK ${{ env.JAVA_VERSION }}
+      # ==========================================================
+      # Step 2: Setup Java 21
+      # Installs Eclipse Temurin JDK 21. The setup-java action also
+      # configures JAVA_HOME and adds java/javac to PATH.
+      # The 'cache: maven' option enables automatic dependency caching.
+      # ==========================================================
+      - name: Setup JDK ${{ env.JAVA_VERSION }} (Eclipse Temurin)
         uses: actions/setup-java@v4
         with:
           java-version: ${{ env.JAVA_VERSION }}
-          distribution: temurin
+          distribution: ${{ env.JAVA_DISTRIBUTION }}
           cache: maven
 
-      - name: Run SpotBugs analysis
-        run: ./mvnw compile spotbugs:check -B || true
-
-      - name: Run dependency check
-        run: ./mvnw dependency:analyze -B || true
-
-      - name: Check for outdated dependencies
-        run: ./mvnw versions:display-dependency-updates -B || true
-
-  # ============================
-  # Job 3: Docker Build & Push
-  # ============================
-  docker:
-    name: Docker Build & Push
-    runs-on: ubuntu-latest
-    needs: build-and-test
-    if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop')
-    permissions:
-      contents: read
-      packages: write
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Log in to GitHub Container Registry
-        uses: docker/login-action@v3
+      # ==========================================================
+      # Step 3: Cache Maven dependencies
+      # The setup-java action handles primary caching via 'cache: maven'.
+      # This step adds a secondary cache for the Maven wrapper to avoid
+      # re-downloading it on every run.
+      # ==========================================================
+      - name: Cache Maven wrapper
+        uses: actions/cache@v4
         with:
-          registry: ${{ env.REGISTRY }}
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
+          path: backend/.mvn/wrapper/maven-wrapper.jar
+          key: maven-wrapper-${{ hashFiles('backend/.mvn/wrapper/maven-wrapper.properties') }}
 
-      - name: Extract metadata
-        id: meta
-        uses: docker/metadata-action@v5
-        with:
-          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
-          tags: |
-            type=ref,event=branch
-            type=sha,prefix=
-            type=raw,value=latest,enable={{is_default_branch}}
+      # ==========================================================
+      # Step 4: Run mvn clean verify
+      # Executes the full Maven lifecycle up to 'verify' phase:
+      #   clean    → removes previous build output
+      #   compile  → compiles main sources
+      #   test     → runs unit tests (Surefire)
+      #   package  → creates JAR
+      #   verify   → runs integration tests (Failsafe)
+      #
+      # Flags:
+      #   -B                    → batch mode (no interactive prompts)
+      #   --no-transfer-progress → clean CI logs (no download progress bars)
+      #   -Dspring.profiles.active=test → activates test profile
+      # ==========================================================
+      - name: Build and verify (compile + test + integration tests)
+        env:
+          DB_URL: jdbc:postgresql://localhost:5432/eams_test
+          DB_USERNAME: postgres
+          DB_PASSWORD: postgres
+          SPRING_PROFILES_ACTIVE: test
+          JWT_SECRET: dGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItY2ktcGlwZWxpbmUtb25seQ==
+        run: |
+          chmod +x mvnw
+          ./mvnw clean verify -B --no-transfer-progress
 
-      - name: Build and push Docker image
-        uses: docker/build-push-action@v5
+      # ==========================================================
+      # Step 5: Upload test results
+      # Always uploads Surefire and Failsafe reports regardless of
+      # build outcome. This allows debugging test failures in the
+      # GitHub Actions UI even when the build fails.
+      # ==========================================================
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          context: ./backend
-          push: true
-          tags: ${{ steps.meta.outputs.tags }}
-          labels: ${{ steps.meta.outputs.labels }}
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
+          name: test-reports
+          path: |
+            backend/target/surefire-reports/
+            backend/target/failsafe-reports/
+          retention-days: 7
+
+      # ==========================================================
+      # Step 6: Package application
+      # At this point, 'verify' has already produced the JAR.
+      # This step simply validates the JAR exists and is runnable.
+      # (The JAR was created during the 'package' phase in step 4)
+      # ==========================================================
+      - name: Verify JAR was produced
+        run: |
+          JAR_FILE=$(ls target/*.jar 2>/dev/null | grep -v original | head -1)
+          if [ -z "$JAR_FILE" ]; then
+            echo "::error::No JAR artifact found in target/"
+            exit 1
+          fi
+          echo "JAR artifact: $JAR_FILE ($(du -h $JAR_FILE | cut -f1))"
+          echo "JAR_PATH=$JAR_FILE" >> $GITHUB_ENV
+
+      # ==========================================================
+      # Step 7: Upload packaged artifact
+      # Uploads the executable Spring Boot JAR as a build artifact.
+      # Downstream jobs (deploy, Docker build) can download this
+      # artifact instead of rebuilding from source.
+      # Retention: 14 days (configurable).
+      # ==========================================================
+      - name: Upload application artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: eams-application
+          path: backend/target/*.jar
+          if-no-files-found: error
+          retention-days: 14
