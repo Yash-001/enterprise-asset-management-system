@@ -5,7 +5,7 @@
 </template>
 
 <script setup lang="ts">
-// AuthLayout — used for login/register pages
+// AuthLayout — minimal wrapper for login/register pages (no sidebar/topbar)
 </script>
 
 <style scoped>
