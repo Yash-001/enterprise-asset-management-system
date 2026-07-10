@@ -29,7 +29,7 @@ import java.net.URI;
 @RequestMapping("/api/v1/assets")
 @RequiredArgsConstructor
 @Tag(name = "Asset Management", description = "APIs for managing assets (CRUD & search)")
-@SecurityRequirement(name = "bearerAuth")
+@SecurityRequirement(name = "Bearer JWT")
 public class AssetController {
 
     private final AssetService assetService;
