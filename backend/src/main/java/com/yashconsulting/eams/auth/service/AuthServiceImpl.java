@@ -4,6 +4,7 @@ import com.yashconsulting.eams.auth.dto.LoginRequest;
 import com.yashconsulting.eams.auth.dto.LoginResponse;
 import com.yashconsulting.eams.auth.dto.RegisterRequest;
 import com.yashconsulting.eams.exception.EmailAlreadyExistsException;
+import com.yashconsulting.eams.security.CustomUserDetails;
 import com.yashconsulting.eams.security.CustomUserDetailsService;
 import com.yashconsulting.eams.security.JwtTokenProvider;
 import com.yashconsulting.eams.security.Role;
@@ -13,13 +14,13 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
 import java.util.Locale;
+import java.util.Map;
 
 @Service
 public class AuthServiceImpl implements AuthService {
@@ -52,8 +53,14 @@ public class AuthServiceImpl implements AuthService {
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword())
         );
 
-        UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        String token = jwtTokenProvider.generateToken(userDetails);
+        CustomUserDetails userDetails = (CustomUserDetails) authentication.getPrincipal();
+        
+        Map<String, Object> claims = new java.util.HashMap<>();
+        claims.put("role", userDetails.getUser().getRole().name());
+        claims.put("firstName", userDetails.getUser().getFirstName());
+        claims.put("lastName", userDetails.getUser().getLastName());
+        
+        String token = jwtTokenProvider.generateToken(claims, userDetails);
 
         return LoginResponse.builder()
                 .accessToken(token)
