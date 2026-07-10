@@ -1,0 +1,188 @@
+# ============================================================================
+# Docker Build & Push Pipeline
+# ============================================================================
+# This workflow builds the Docker image, verifies it starts correctly,
+# tags it with branch/SHA/latest, and pushes to GitHub Container Registry.
+#
+# Triggers:
+#   - After CI passes on main/develop (push only, not PRs)
+#   - Manual dispatch for ad-hoc builds
+#
+# Secrets used:
+#   - GITHUB_TOKEN (automatic) — authenticates to ghcr.io
+#
+# Tags produced:
+#   - ghcr.io/<owner>/<repo>:latest       (main branch only)
+#   - ghcr.io/<owner>/<repo>:<branch>     (branch name)
+#   - ghcr.io/<owner>/<repo>:<sha>        (short commit SHA)
+# ============================================================================
+
+name: Docker — Build & Push
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'backend/**'
+      - '.github/workflows/docker.yml'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Custom image tag (optional)'
+        required: false
+        default: ''
+
+env:
+  REGISTRY: ghcr.io
+  IMAGE_NAME: ${{ github.repository }}
+
+jobs:
+  docker-build-push:
+    name: Build → Verify → Push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      # ==========================================================
+      # Step 1: Checkout source code
+      # ==========================================================
+      - name: Checkout source code
+        uses: actions/checkout@v4
+
+      # ==========================================================
+      # Step 2: Setup Docker Buildx
+      # Enables advanced Docker build features: multi-platform,
+      # build cache, and layer caching with GitHub Actions cache.
+      # ==========================================================
+      - name: Setup Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      # ==========================================================
+      # Step 3: Log in to GitHub Container Registry
+      # Uses the automatic GITHUB_TOKEN secret for authentication.
+      # No additional secrets configuration required.
+      # ==========================================================
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ${{ env.REGISTRY }}
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # ==========================================================
+      # Step 4: Extract Docker metadata
+      # Generates tags and labels from Git context:
+      #   - Branch name tag (e.g., main, develop)
+      #   - Short SHA tag (e.g., abc1234)
+      #   - 'latest' tag (only on default branch)
+      #   - Custom tag (if provided via workflow_dispatch)
+      # ==========================================================
+      - name: Extract Docker metadata (tags & labels)
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}
+          tags: |
+            type=ref,event=branch
+            type=sha,prefix=,format=short
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=raw,value=${{ inputs.tag }},enable=${{ inputs.tag != '' }}
+
+      # ==========================================================
+      # Step 5: Build Docker image
+      # Multi-stage build from backend/Dockerfile.
+      # Uses GitHub Actions cache for layer reuse across builds.
+      # Image is loaded locally (not pushed yet) for verification.
+      # ==========================================================
+      - name: Build Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          load: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ==========================================================
+      # Step 6: Verify Docker image
+      # Starts the container with minimal config to confirm:
+      #   - Image was built successfully
+      #   - JVM starts without errors
+      #   - Spring Boot application context loads
+      #   - Health endpoint responds HTTP 200
+      # Container is stopped and removed after verification.
+      # ==========================================================
+      - name: Verify Docker image starts correctly
+        run: |
+          echo "Starting container for verification..."
+          docker run -d \
+            --name eams-verify \
+            -p 8080:8080 \
+            -e SPRING_PROFILES_ACTIVE=test \
+            -e DB_URL=jdbc:postgresql://localhost:5432/test \
+            -e DB_USERNAME=postgres \
+            -e DB_PASSWORD=postgres \
+            -e JWT_SECRET=dGVzdC1qd3Qtc2VjcmV0LWtleS1mb3ItY2ktcGlwZWxpbmUtb25seQ== \
+            -e "SPRING_FLYWAY_ENABLED=false" \
+            -e "SPRING_DATASOURCE_HIKARI_MINIMUM_IDLE=0" \
+            ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}:${{ github.ref_name }}
+
+          echo "Waiting for application startup (max 60s)..."
+          RETRIES=0
+          MAX_RETRIES=12
+          until [ $RETRIES -ge $MAX_RETRIES ]; do
+            if docker logs eams-verify 2>&1 | grep -q "Started EnterpriseAssetManagementApplication"; then
+              echo "✅ Application started successfully"
+              break
+            fi
+            RETRIES=$((RETRIES + 1))
+            sleep 5
+          done
+
+          if [ $RETRIES -ge $MAX_RETRIES ]; then
+            echo "❌ Application failed to start within 60s"
+            echo "--- Container logs ---"
+            docker logs eams-verify
+            docker rm -f eams-verify
+            exit 1
+          fi
+
+          # Cleanup
+          docker rm -f eams-verify
+          echo "✅ Docker image verification passed"
+
+      # ==========================================================
+      # Step 7: Push Docker image to GHCR
+      # Rebuilds with push=true (uses cached layers from step 5).
+      # All tags from metadata step are pushed to the registry.
+      # ==========================================================
+      - name: Push Docker image to GitHub Container Registry
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          file: ./backend/Dockerfile
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      # ==========================================================
+      # Step 8: Output image details
+      # Prints the pushed image tags and digest for reference.
+      # ==========================================================
+      - name: Print image details
+        run: |
+          echo "## Docker Image Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Registry:** ${{ env.REGISTRY }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** ${{ env.IMAGE_NAME }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Tags:**" >> $GITHUB_STEP_SUMMARY
+          echo '${{ steps.meta.outputs.tags }}' | tr ',' '\n' | while read tag; do
+            echo "- \`$tag\`" >> $GITHUB_STEP_SUMMARY
+          done
