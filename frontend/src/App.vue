@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 import { useThemeStore } from '@/shared/stores'
 import { eventBus, EVENT_NAMES } from '@/shared/services'
 import { useRouter } from 'vue-router'
@@ -19,12 +19,16 @@ import MaintenanceBanner from '@/shared/components/MaintenanceBanner.vue'
 const themeStore = useThemeStore()
 const router = useRouter()
 
+function handleSessionExpired(): void {
+  router.push({ name: ROUTE_NAMES.LOGIN })
+}
+
 onMounted(() => {
   themeStore.initTheme()
+  eventBus.on(EVENT_NAMES.SESSION_EXPIRED, handleSessionExpired)
+})
 
-  // Listen for session expiry events from interceptors
-  eventBus.on(EVENT_NAMES.SESSION_EXPIRED, () => {
-    router.push({ name: ROUTE_NAMES.LOGIN })
-  })
+onUnmounted(() => {
+  eventBus.off(EVENT_NAMES.SESSION_EXPIRED, handleSessionExpired)
 })
 </script>

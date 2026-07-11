@@ -7,7 +7,7 @@
     </div>
 
     <!-- Navigation -->
-    <nav class="sidebar-nav">
+    <nav class="sidebar-nav" aria-label="Main navigation">
       <div v-for="section in visibleSections" :key="section.title" class="nav-section">
         <span v-if="!uiStore.isSidebarCollapsed" class="nav-section-title">
           {{ section.title }}
@@ -29,7 +29,7 @@
 
     <!-- Collapse toggle -->
     <div class="sidebar-footer">
-      <button class="collapse-btn" @click="uiStore.toggleSidebar">
+      <button class="collapse-btn" @click="uiStore.toggleSidebar" :aria-label="uiStore.isSidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'">
         <i :class="['pi', uiStore.isSidebarCollapsed ? 'pi-angle-right' : 'pi-angle-left']"></i>
       </button>
     </div>

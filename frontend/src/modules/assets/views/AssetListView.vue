@@ -38,7 +38,10 @@
         </Column>
         <Column field="active" header="Active" style="width: 80px">
           <template #body="{ data }">
-            <i :class="['pi', data.active ? 'pi-check-circle text-success' : 'pi-times-circle text-danger']"></i>
+            <span :aria-label="data.active ? 'Active' : 'Inactive'">
+              <i :class="['pi', data.active ? 'pi-check-circle text-success' : 'pi-times-circle text-danger']"></i>
+              <span class="hide-mobile" style="margin-left: 0.25rem; font-size: 0.75rem;">{{ data.active ? 'Yes' : 'No' }}</span>
+            </span>
           </template>
         </Column>
         <Column header="Actions" style="width: 120px">

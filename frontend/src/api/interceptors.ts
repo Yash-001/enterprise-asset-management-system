@@ -1,7 +1,7 @@
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios'
 import axiosInstance from './axios'
 import { STORAGE_KEYS, API_CONSTANTS } from '@/shared/constants'
-import { eventBus } from '@/shared/services'
+import { eventBus, EVENT_NAMES } from '@/shared/services'
 import { logger } from '@/shared/utils'
 
 /**
@@ -36,7 +36,7 @@ export function setupInterceptors(): void {
           localStorage.removeItem(STORAGE_KEYS.ACCESS_TOKEN)
           localStorage.removeItem(STORAGE_KEYS.USER)
           localStorage.removeItem(STORAGE_KEYS.TOKEN_EXPIRY)
-          eventBus.emit('SESSION_EXPIRED')
+          eventBus.emit(EVENT_NAMES.SESSION_EXPIRED)
           break
 
         case API_CONSTANTS.STATUS.FORBIDDEN:
