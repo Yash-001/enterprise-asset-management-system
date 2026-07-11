@@ -1,9 +1,13 @@
 import { apiClient, ENDPOINTS } from '@/api'
+import type { PageResponse } from '@/shared/types'
 import type { AssignmentListItem, AssignmentCreatePayload } from '../types'
 
 export class AssignmentService {
-  async getAll(): Promise<AssignmentListItem[]> {
-    return apiClient.get<AssignmentListItem[]>(ENDPOINTS.ASSIGNMENTS.BASE)
+  async getHistory(params: Record<string, unknown> = {}): Promise<PageResponse<AssignmentListItem>> {
+    return apiClient.getPaged<AssignmentListItem>(
+      ENDPOINTS.ASSIGNMENTS.BASE + '/history',
+      params
+    )
   }
 
   async getById(id: number): Promise<AssignmentListItem> {
@@ -14,8 +18,11 @@ export class AssignmentService {
     return apiClient.post<AssignmentListItem>(ENDPOINTS.ASSIGNMENTS.BASE, payload)
   }
 
-  async returnAsset(id: number): Promise<AssignmentListItem> {
-    return apiClient.put<AssignmentListItem>(ENDPOINTS.ASSIGNMENTS.RETURN(id), {})
+  async returnAsset(id: number, returnedDate?: string, remarks?: string): Promise<AssignmentListItem> {
+    const params: Record<string, string> = {}
+    if (returnedDate) params.returnedDate = returnedDate
+    if (remarks) params.remarks = remarks
+    return apiClient.post<AssignmentListItem>(ENDPOINTS.ASSIGNMENTS.RETURN(id), null, { params })
   }
 }
 

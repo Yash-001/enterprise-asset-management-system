@@ -44,8 +44,9 @@ export const ENDPOINTS = {
     BASE: '/api/v1/spare-parts',
     BY_ID: (id: number) => `/api/v1/spare-parts/${id}`,
     SEARCH: '/api/v1/spare-parts/search',
-    LOW_STOCK: '/api/v1/spare-parts/low-stock',
-    DASHBOARD: '/api/v1/spare-parts/dashboard'
+    LOW_STOCK: '/api/v1/spare-parts/dashboard/low-stock',
+    OUT_OF_STOCK: '/api/v1/spare-parts/dashboard/out-of-stock',
+    DASHBOARD: '/api/v1/spare-parts/dashboard/metrics'
   },
 
   STOCK_TRANSACTIONS: {
@@ -68,12 +69,14 @@ export const ENDPOINTS = {
 
   DEPARTMENTS: {
     BASE: '/api/v1/departments',
-    BY_ID: (id: number) => `/api/v1/departments/${id}`
+    BY_ID: (id: number) => `/api/v1/departments/${id}`,
+    SEARCH: '/api/v1/departments/search'
   },
 
   LOCATIONS: {
     BASE: '/api/v1/locations',
-    BY_ID: (id: number) => `/api/v1/locations/${id}`
+    BY_ID: (id: number) => `/api/v1/locations/${id}`,
+    SEARCH: '/api/v1/locations/search'
   },
 
   NOTIFICATIONS: {
@@ -97,7 +100,7 @@ export const ENDPOINTS = {
   },
 
   REPORTS: {
-    BASE: '/api/v1/reports'
+    DASHBOARD: '/api/v1/reports/dashboard'
   },
 
   HEALTH: '/management/health'

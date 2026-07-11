@@ -27,6 +27,11 @@ export class MaintenanceService {
     return apiClient.delete(ENDPOINTS.MAINTENANCE.BY_ID(id))
   }
 
+  async complete(id: number, completionDate?: string): Promise<MaintenancePlanListItem> {
+    const params = completionDate ? { completionDate } : {}
+    return apiClient.post<MaintenancePlanListItem>(ENDPOINTS.MAINTENANCE.COMPLETE(id), null, { params })
+  }
+
   async getDashboard(): Promise<unknown> {
     return apiClient.get(ENDPOINTS.MAINTENANCE.DASHBOARD)
   }

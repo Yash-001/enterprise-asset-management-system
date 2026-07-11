@@ -6,14 +6,15 @@ export interface AssignmentListItem {
   employeeId: number
   status: AssignmentStatus
   assignedDate: string
+  expectedReturnDate: string | null
   returnedDate: string | null
   remarks: string | null
-  createdAt: string
 }
 
 export interface AssignmentCreatePayload {
   assetId: number
   employeeId: number
   assignedDate: string
+  expectedReturnDate: string
   remarks?: string
 }

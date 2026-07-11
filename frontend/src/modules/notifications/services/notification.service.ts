@@ -1,9 +1,10 @@
 import { apiClient, ENDPOINTS } from '@/api'
-import type { NotificationResponse } from '../types'
+import type { PageResponse } from '@/shared/types'
+import type { NotificationResponse } from '@/shared/types/response.types'
 
 export class NotificationService {
-  async getAll(): Promise<NotificationResponse[]> {
-    return apiClient.get<NotificationResponse[]>(ENDPOINTS.NOTIFICATIONS.BASE)
+  async getAll(params: Record<string, unknown> = {}): Promise<PageResponse<NotificationResponse>> {
+    return apiClient.getPaged<NotificationResponse>(ENDPOINTS.NOTIFICATIONS.BASE, params)
   }
 
   async getById(id: number): Promise<NotificationResponse> {
@@ -11,15 +12,17 @@ export class NotificationService {
   }
 
   async markAsRead(id: number): Promise<void> {
-    return apiClient.put<void>(ENDPOINTS.NOTIFICATIONS.MARK_READ(id), {})
+    return apiClient.put<void>(ENDPOINTS.NOTIFICATIONS.MARK_READ(id))
   }
 
-  async markAllAsRead(): Promise<void> {
-    return apiClient.put<void>(ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ, {})
+  async markAllAsRead(recipientUserId?: number): Promise<void> {
+    const params = recipientUserId ? { recipientUserId } : {}
+    return apiClient.put<void>(ENDPOINTS.NOTIFICATIONS.MARK_ALL_READ, null, { params })
   }
 
-  async getUnreadCount(): Promise<number> {
-    return apiClient.get<number>(ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT)
+  async getUnreadCount(recipientUserId?: number): Promise<number> {
+    const params = recipientUserId ? { recipientUserId } : {}
+    return apiClient.get<number>(ENDPOINTS.NOTIFICATIONS.UNREAD_COUNT, { params })
   }
 
   async delete(id: number): Promise<void> {
