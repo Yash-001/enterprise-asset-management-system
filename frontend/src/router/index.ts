@@ -1,6 +1,7 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { authRoutes } from '@/modules/auth'
 import { dashboardRoutes } from '@/modules/dashboard'
+import { userRoutes } from '@/modules/users'
 import { ROUTE_NAMES, ROUTE_PATHS, PERMISSIONS } from '@/shared/constants'
 import { isFeatureEnabled } from '@/shared/config'
 import { authGuard } from './guards'
@@ -115,15 +116,7 @@ const routes: RouteRecordRaw[] = [
       },
 
       // ─── Users (Admin only) ───────────────────────────────────────
-      {
-        path: ROUTE_PATHS.USERS,
-        name: ROUTE_NAMES.USERS,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Users',
-          permissions: [PERMISSIONS.USER_VIEW]
-        }
-      },
+      userRoutes,
 
       // ─── Notifications (feature-flagged) ──────────────────────────
       ...(isFeatureEnabled('NOTIFICATIONS')
