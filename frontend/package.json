@@ -9,7 +9,13 @@
     "preview": "vite preview",
     "lint": "eslint . --ext .vue,.ts,.tsx --fix",
     "format": "prettier --write \"src/**/*.{ts,vue,scss,css,json}\"",
-    "type-check": "vue-tsc --noEmit"
+    "type-check": "vue-tsc --noEmit",
+    "test:unit": "vitest run",
+    "test:unit:watch": "vitest",
+    "test:unit:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:report": "playwright show-report"
   },
   "dependencies": {
     "vue": "^3.5.0",
@@ -33,6 +39,11 @@
     "eslint-plugin-vue": "^9.28.0",
     "eslint-config-prettier": "^9.1.0",
     "prettier": "^3.3.0",
-    "sass": "^1.77.0"
+    "sass": "^1.77.0",
+    "vitest": "^2.0.0",
+    "@vitest/coverage-v8": "^2.0.0",
+    "@vue/test-utils": "^2.4.0",
+    "happy-dom": "^14.0.0",
+    "@playwright/test": "^1.45.0"
   }
 }
