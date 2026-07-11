@@ -1,4 +1,6 @@
 @use 'variables' as *;
+@use 'theme';
+@use 'components';
 
 // ===========================
 // Global Reset & Base
@@ -18,10 +20,34 @@ body {
     sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background: var(--eams-bg);
+  color: var(--eams-text);
+  transition: background var(--eams-transition), color var(--eams-transition);
 }
 
 #app {
   height: 100%;
+}
+
+// ===========================
+// Scrollbar Styling
+// ===========================
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--eams-border);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--eams-text-muted);
 }
 
 // ===========================
@@ -35,6 +61,26 @@ body {
 
 .w-full {
   width: 100%;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-muted {
+  color: var(--eams-text-muted);
+}
+
+.text-success {
+  color: var(--eams-success);
+}
+
+.text-warning {
+  color: var(--eams-warning);
+}
+
+.text-danger {
+  color: var(--eams-danger);
 }
 
 // ===========================
@@ -54,11 +100,39 @@ body {
   margin-bottom: 1.5rem;
 }
 
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+
+  .col-span-2 {
+    grid-column: span 2;
+  }
+}
+
 @media (max-width: $breakpoint-mobile) {
   .stats-grid {
     grid-template-columns: 1fr;
   }
+
   .chart-grid {
     grid-template-columns: 1fr;
   }
+
+  .form-grid {
+    grid-template-columns: 1fr;
+
+    .col-span-2 {
+      grid-column: span 1;
+    }
+  }
+}
+
+// ===========================
+// Focus ring for accessibility
+// ===========================
+:focus-visible {
+  outline: 2px solid var(--eams-primary);
+  outline-offset: 2px;
+  border-radius: var(--eams-radius-sm);
 }

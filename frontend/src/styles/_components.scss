@@ -1,0 +1,124 @@
+// ===========================
+// Component-level theme overrides
+// Applies EAMS tokens to common UI patterns
+// ===========================
+
+// ─── Cards ──────────────────────────────────────────────────────────────────
+.eams-card {
+  background: var(--eams-card);
+  border: 1px solid var(--eams-border);
+  border-radius: var(--eams-radius-md);
+  box-shadow: var(--eams-shadow-sm);
+  padding: 1.25rem;
+  transition: box-shadow var(--eams-transition);
+
+  &:hover {
+    box-shadow: var(--eams-shadow-md);
+  }
+}
+
+// ─── Stat Cards ─────────────────────────────────────────────────────────────
+.stat-card {
+  background: var(--eams-card);
+  border-radius: var(--eams-radius-md);
+  padding: 1.25rem;
+  border-left: 4px solid var(--eams-primary);
+  box-shadow: var(--eams-shadow-sm);
+  transition: transform var(--eams-transition), box-shadow var(--eams-transition);
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--eams-shadow-md);
+  }
+}
+
+// ─── Status Badges ──────────────────────────────────────────────────────────
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+
+  &--success {
+    background: color-mix(in srgb, var(--eams-success) 15%, transparent);
+    color: var(--eams-success);
+  }
+
+  &--warning {
+    background: color-mix(in srgb, var(--eams-warning) 15%, transparent);
+    color: var(--eams-warning);
+  }
+
+  &--danger {
+    background: color-mix(in srgb, var(--eams-danger) 15%, transparent);
+    color: var(--eams-danger);
+  }
+
+  &--info {
+    background: color-mix(in srgb, var(--eams-info) 15%, transparent);
+    color: var(--eams-info);
+  }
+
+  &--neutral {
+    background: var(--eams-hover);
+    color: var(--eams-text-muted);
+  }
+}
+
+// ─── Page Header ────────────────────────────────────────────────────────────
+.page-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+
+  &__title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--eams-text);
+    margin: 0;
+  }
+
+  &__subtitle {
+    font-size: 0.875rem;
+    color: var(--eams-text-muted);
+    margin-top: 0.25rem;
+  }
+
+  &__actions {
+    display: flex;
+    gap: 0.5rem;
+  }
+}
+
+// ─── Empty State ────────────────────────────────────────────────────────────
+.empty-state {
+  text-align: center;
+  padding: 3rem 1.5rem;
+  color: var(--eams-text-muted);
+
+  &__icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  &__title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--eams-text);
+    margin-bottom: 0.5rem;
+  }
+
+  &__description {
+    font-size: 0.875rem;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}

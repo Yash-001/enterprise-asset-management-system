@@ -1,0 +1,84 @@
+// ===========================
+// EAMS Theme — Custom Design Tokens
+// Extends PrimeVue Aura preset with enterprise branding
+// ===========================
+
+// ─── Light Mode (default) ──────────────────────────────────────────────────
+:root {
+  // Brand
+  --eams-primary: #2563eb;
+  --eams-primary-hover: #1d4ed8;
+  --eams-primary-light: #eff6ff;
+
+  // Surfaces
+  --eams-bg: #f8fafc;
+  --eams-card: #ffffff;
+  --eams-border: #e2e8f0;
+  --eams-hover: #f1f5f9;
+
+  // Text
+  --eams-text: #1e293b;
+  --eams-text-muted: #64748b;
+  --eams-text-subtle: #94a3b8;
+
+  // Status Colors
+  --eams-success: #10b981;
+  --eams-warning: #f59e0b;
+  --eams-danger: #ef4444;
+  --eams-info: #3b82f6;
+
+  // Sidebar
+  --eams-sidebar-bg: #ffffff;
+  --eams-sidebar-border: #e2e8f0;
+  --eams-sidebar-active-bg: var(--eams-primary);
+  --eams-sidebar-active-text: #ffffff;
+
+  // Shadows
+  --eams-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04);
+  --eams-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.06);
+  --eams-shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.08);
+
+  // Radius
+  --eams-radius-sm: 6px;
+  --eams-radius-md: 10px;
+  --eams-radius-lg: 16px;
+
+  // Transitions
+  --eams-transition: 0.2s ease;
+}
+
+// ─── Dark Mode ─────────────────────────────────────────────────────────────
+.app-dark {
+  // Brand (slightly brighter for dark backgrounds)
+  --eams-primary: #3b82f6;
+  --eams-primary-hover: #60a5fa;
+  --eams-primary-light: #1e3a5f;
+
+  // Surfaces
+  --eams-bg: #0f172a;
+  --eams-card: #1e293b;
+  --eams-border: #334155;
+  --eams-hover: #334155;
+
+  // Text
+  --eams-text: #f1f5f9;
+  --eams-text-muted: #94a3b8;
+  --eams-text-subtle: #64748b;
+
+  // Status Colors (same, they work on dark)
+  --eams-success: #34d399;
+  --eams-warning: #fbbf24;
+  --eams-danger: #f87171;
+  --eams-info: #60a5fa;
+
+  // Sidebar
+  --eams-sidebar-bg: #1e293b;
+  --eams-sidebar-border: #334155;
+  --eams-sidebar-active-bg: var(--eams-primary);
+  --eams-sidebar-active-text: #ffffff;
+
+  // Shadows (more subtle in dark)
+  --eams-shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+  --eams-shadow-md: 0 4px 6px rgba(0, 0, 0, 0.3);
+  --eams-shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.4);
+}

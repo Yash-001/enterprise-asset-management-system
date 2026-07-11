@@ -3,5 +3,9 @@
 </template>
 
 <script setup lang="ts">
-// App root — layouts are handled by router-view
+import { useThemeStore } from '@/shared/stores'
+
+// Initialize theme (dark/light) on app mount
+const themeStore = useThemeStore()
+themeStore.initTheme()
 </script>
