@@ -1,0 +1,12 @@
+node_modules/
+dist/
+e2e/
+coverage/
+*.log
+.env.local
+.env.*.local
+.git/
+.vscode/
+.idea/
+playwright-report/
+test-results/
