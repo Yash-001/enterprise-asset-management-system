@@ -2,6 +2,7 @@ import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { authRoutes } from '@/modules/auth'
 import { dashboardRoutes } from '@/modules/dashboard'
 import { userRoutes } from '@/modules/users'
+import { assetRoutes } from '@/modules/assets'
 import { ROUTE_NAMES, ROUTE_PATHS, PERMISSIONS } from '@/shared/constants'
 import { isFeatureEnabled } from '@/shared/config'
 import { authGuard } from './guards'
@@ -28,15 +29,7 @@ const routes: RouteRecordRaw[] = [
       dashboardRoutes,
 
       // ─── Assets ───────────────────────────────────────────────────
-      {
-        path: ROUTE_PATHS.ASSETS,
-        name: ROUTE_NAMES.ASSETS,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Assets',
-          permissions: [PERMISSIONS.ASSET_VIEW]
-        }
-      },
+      ...assetRoutes,
 
       // ─── Work Orders ──────────────────────────────────────────────
       {
