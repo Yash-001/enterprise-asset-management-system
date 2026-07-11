@@ -31,10 +31,24 @@ public class CorsConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOriginPatterns(List.of("*"));
+
+        // Use allowedOriginPatterns to support both wildcards and credentials
+        List<String> origins = Arrays.asList(allowedOrigins.split(","));
+        if (origins.contains("*")) {
+            configuration.setAllowedOriginPatterns(List.of("*"));
+        } else {
+            configuration.setAllowedOriginPatterns(origins.stream().map(String::trim).toList());
+        }
+
         configuration.setAllowedMethods(Arrays.asList(allowedMethods.split(",")));
-        configuration.setAllowedHeaders(List.of("*"));
-        configuration.setAllowCredentials(true);
+
+        if ("*".equals(allowedHeaders.trim())) {
+            configuration.setAllowedHeaders(List.of("*"));
+        } else {
+            configuration.setAllowedHeaders(Arrays.asList(allowedHeaders.split(",")));
+        }
+
+        configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(maxAge);
         configuration.setExposedHeaders(List.of("Authorization", "Content-Disposition"));
 
