@@ -3,176 +3,130 @@ import { authRoutes } from '@/modules/auth'
 import { dashboardRoutes } from '@/modules/dashboard'
 import { userRoutes } from '@/modules/users'
 import { assetRoutes } from '@/modules/assets'
-import { ROUTE_NAMES, ROUTE_PATHS, PERMISSIONS } from '@/shared/constants'
+import { ROUTE_NAMES, ROUTE_PATHS } from '@/shared/constants'
 import { isFeatureEnabled } from '@/shared/config'
 import { authGuard } from './guards'
 
-/**
- * Application-level routes.
- * Feature module routes are aggregated here.
- * Protected routes are wrapped with AppLayout (children pattern).
- */
 const routes: RouteRecordRaw[] = [
-  // ─── Auth (public) ────────────────────────────────────────────────────
+  // Auth (public)
   ...authRoutes,
 
-  // ─── Protected (AppLayout wrapper) ────────────────────────────────────
+  // Protected (AppLayout wrapper)
   {
     path: '/',
     component: () => import('@/layouts/AppLayout.vue'),
     meta: { requiresAuth: true },
     children: [
-      {
-        path: '',
-        redirect: ROUTE_PATHS.DASHBOARD
-      },
+      { path: '', redirect: ROUTE_PATHS.DASHBOARD },
       dashboardRoutes,
-
-      // ─── Assets ───────────────────────────────────────────────────
       ...assetRoutes,
+      userRoutes,
 
-      // ─── Work Orders ──────────────────────────────────────────────
+      // Work Orders
       {
         path: ROUTE_PATHS.WORK_ORDERS,
         name: ROUTE_NAMES.WORK_ORDERS,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Work Orders',
-          permissions: [PERMISSIONS.WORKORDER_VIEW]
-        }
+        component: () => import('@/modules/work-orders/views/WorkOrderListView.vue'),
+        meta: { title: 'Work Orders', permissions: ['WORKORDER_VIEW'] }
       },
 
-      // ─── Maintenance ──────────────────────────────────────────────
+      // Assignments
+      {
+        path: ROUTE_PATHS.ASSIGNMENTS,
+        name: ROUTE_NAMES.ASSIGNMENTS,
+        component: () => import('@/modules/assignments/views/AssignmentListView.vue'),
+        meta: { title: 'Assignments', permissions: ['ASSIGNMENT_VIEW'] }
+      },
+
+      // Maintenance
       {
         path: ROUTE_PATHS.MAINTENANCE,
         name: ROUTE_NAMES.MAINTENANCE,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Maintenance',
-          permissions: [PERMISSIONS.MAINTENANCE_VIEW]
-        }
+        component: () => import('@/modules/maintenance/views/MaintenanceListView.vue'),
+        meta: { title: 'Maintenance', permissions: ['MAINTENANCE_VIEW'] }
       },
 
-      // ─── Inventory ────────────────────────────────────────────────
+      // Inventory
       {
         path: ROUTE_PATHS.INVENTORY,
         name: ROUTE_NAMES.INVENTORY,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Inventory',
-          permissions: [PERMISSIONS.INVENTORY_VIEW]
-        }
+        component: () => import('@/modules/inventory/views/InventoryListView.vue'),
+        meta: { title: 'Inventory', permissions: ['INVENTORY_VIEW'] }
       },
 
-      // ─── Purchase Orders ──────────────────────────────────────────
+      // Purchase Orders
       {
         path: ROUTE_PATHS.PURCHASE_ORDERS,
         name: ROUTE_NAMES.PURCHASE_ORDERS,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Purchase Orders',
-          permissions: [PERMISSIONS.PURCHASE_VIEW]
-        }
+        component: () => import('@/modules/purchase-orders/views/PurchaseOrderListView.vue'),
+        meta: { title: 'Purchase Orders', permissions: ['PURCHASE_VIEW'] }
       },
 
-      // ─── Vendors ──────────────────────────────────────────────────
+      // Vendors
       {
         path: ROUTE_PATHS.VENDORS,
         name: ROUTE_NAMES.VENDORS,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Vendors',
-          permissions: [PERMISSIONS.VENDOR_VIEW]
-        }
+        component: () => import('@/modules/vendors/views/VendorListView.vue'),
+        meta: { title: 'Vendors', permissions: ['VENDOR_VIEW'] }
       },
 
-      // ─── Departments ──────────────────────────────────────────────
+      // Departments
       {
         path: ROUTE_PATHS.DEPARTMENTS,
         name: ROUTE_NAMES.DEPARTMENTS,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Departments',
-          permissions: [PERMISSIONS.DEPARTMENT_VIEW]
-        }
+        component: () => import('@/modules/departments/views/DepartmentListView.vue'),
+        meta: { title: 'Departments', permissions: ['DEPARTMENT_VIEW'] }
       },
 
-      // ─── Locations ────────────────────────────────────────────────
+      // Locations
       {
         path: ROUTE_PATHS.LOCATIONS,
         name: ROUTE_NAMES.LOCATIONS,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Locations',
-          permissions: [PERMISSIONS.LOCATION_VIEW]
-        }
+        component: () => import('@/modules/locations/views/LocationListView.vue'),
+        meta: { title: 'Locations', permissions: ['LOCATION_VIEW'] }
       },
 
-      // ─── Users (Admin only) ───────────────────────────────────────
-      userRoutes,
-
-      // ─── Notifications (feature-flagged) ──────────────────────────
+      // Notifications (feature-flagged)
       ...(isFeatureEnabled('NOTIFICATIONS')
-        ? [
-            {
-              path: ROUTE_PATHS.NOTIFICATIONS,
-              name: ROUTE_NAMES.NOTIFICATIONS,
-              component: () => import('@/layouts/AppLayout.vue'), // placeholder
-              meta: {
-                title: 'Notifications',
-                permissions: [PERMISSIONS.NOTIFICATION_VIEW],
-                featureFlag: 'NOTIFICATIONS' as const
-              }
-            }
-          ]
+        ? [{
+            path: ROUTE_PATHS.NOTIFICATIONS,
+            name: ROUTE_NAMES.NOTIFICATIONS,
+            component: () => import('@/modules/notifications/views/NotificationListView.vue'),
+            meta: { title: 'Notifications', permissions: ['NOTIFICATION_VIEW'], featureFlag: 'NOTIFICATIONS' as const }
+          }]
         : []),
 
-      // ─── Documents (feature-flagged) ──────────────────────────────
+      // Documents (feature-flagged)
       ...(isFeatureEnabled('DOCUMENTS')
-        ? [
-            {
-              path: ROUTE_PATHS.DOCUMENTS,
-              name: ROUTE_NAMES.DOCUMENTS,
-              component: () => import('@/layouts/AppLayout.vue'), // placeholder
-              meta: {
-                title: 'Documents',
-                permissions: [PERMISSIONS.DOCUMENT_VIEW],
-                featureFlag: 'DOCUMENTS' as const
-              }
-            }
-          ]
+        ? [{
+            path: ROUTE_PATHS.DOCUMENTS,
+            name: ROUTE_NAMES.DOCUMENTS,
+            component: () => import('@/modules/documents/views/DocumentListView.vue'),
+            meta: { title: 'Documents', permissions: ['DOCUMENT_VIEW'], featureFlag: 'DOCUMENTS' as const }
+          }]
         : []),
 
-      // ─── Reports (feature-flagged) ────────────────────────────────
+      // Reports (feature-flagged)
       ...(isFeatureEnabled('REPORTS')
-        ? [
-            {
-              path: ROUTE_PATHS.REPORTS,
-              name: ROUTE_NAMES.REPORTS,
-              component: () => import('@/layouts/AppLayout.vue'), // placeholder
-              meta: {
-                title: 'Reports',
-                permissions: [PERMISSIONS.REPORT_VIEW],
-                featureFlag: 'REPORTS' as const
-              }
-            }
-          ]
+        ? [{
+            path: ROUTE_PATHS.REPORTS,
+            name: ROUTE_NAMES.REPORTS,
+            component: () => import('@/modules/reports/views/ReportView.vue'),
+            meta: { title: 'Reports', permissions: ['REPORT_VIEW'], featureFlag: 'REPORTS' as const }
+          }]
         : []),
 
-      // ─── Audit Logs ───────────────────────────────────────────────
+      // Audit Logs
       {
         path: ROUTE_PATHS.AUDIT_LOGS,
         name: ROUTE_NAMES.AUDIT_LOGS,
-        component: () => import('@/layouts/AppLayout.vue'), // placeholder
-        meta: {
-          title: 'Audit Logs',
-          permissions: [PERMISSIONS.AUDIT_VIEW]
-        }
+        component: () => import('@/modules/audit-logs/views/AuditLogListView.vue'),
+        meta: { title: 'Audit Logs', permissions: ['AUDIT_VIEW'] }
       }
     ]
   },
 
-  // ─── Error Pages ──────────────────────────────────────────────────────
+  // Error pages
   {
     path: ROUTE_PATHS.FORBIDDEN,
     name: ROUTE_NAMES.FORBIDDEN,
