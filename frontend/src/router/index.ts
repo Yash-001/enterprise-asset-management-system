@@ -111,7 +111,7 @@ const routes: RouteRecordRaw[] = [
         ? [{
             path: ROUTE_PATHS.REPORTS,
             name: ROUTE_NAMES.REPORTS,
-            component: () => import('@/modules/reports/views/ReportView.vue'),
+            component: () => import('@/modules/reports/views/ReportListView.vue'),
             meta: { title: 'Reports', permissions: ['REPORT_VIEW'], featureFlag: 'REPORTS' as const }
           }]
         : []),
