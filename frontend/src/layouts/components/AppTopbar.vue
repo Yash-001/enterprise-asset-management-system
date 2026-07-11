@@ -1,7 +1,7 @@
 <template>
   <header class="topbar">
     <div class="topbar-left">
-      <button class="topbar-btn hamburger" @click="uiStore.toggleSidebar">
+      <button class="topbar-btn hamburger" @click="emit('toggle-mobile-menu')">
         <i class="pi pi-bars"></i>
       </button>
       <Breadcrumb :model="breadcrumbItems" class="topbar-breadcrumb" />
@@ -53,6 +53,10 @@ const router = useRouter()
 const authStore = useAuthStore()
 const uiStore = useUIStore()
 const themeStore = useThemeStore()
+
+const emit = defineEmits<{
+  'toggle-mobile-menu': []
+}>()
 
 const unreadCount = ref(0)
 

@@ -208,10 +208,12 @@ const visibleSections = computed<NavSection[]>(() => {
   .sidebar {
     transform: translateX(-100%);
     position: fixed;
+    transition: transform 0.3s ease;
   }
 
   .sidebar.mobile-open {
     transform: translateX(0);
+    box-shadow: var(--eams-shadow-lg);
   }
 }
 </style>

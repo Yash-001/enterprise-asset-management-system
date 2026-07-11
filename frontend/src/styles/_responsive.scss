@@ -1,0 +1,174 @@
+// ===========================
+// Responsive Breakpoints & Mobile Support
+// ===========================
+@use 'variables' as *;
+
+// ─── Breakpoint Mixins ──────────────────────────────────────────────────────
+@mixin mobile {
+  @media (max-width: #{$breakpoint-mobile - 1px}) {
+    @content;
+  }
+}
+
+@mixin tablet {
+  @media (min-width: $breakpoint-mobile) and (max-width: #{$breakpoint-tablet - 1px}) {
+    @content;
+  }
+}
+
+@mixin tablet-and-below {
+  @media (max-width: #{$breakpoint-tablet - 1px}) {
+    @content;
+  }
+}
+
+@mixin desktop {
+  @media (min-width: $breakpoint-tablet) {
+    @content;
+  }
+}
+
+// ─── Responsive Utility Classes ─────────────────────────────────────────────
+
+// Hide on specific breakpoints
+.hide-mobile {
+  @include mobile {
+    display: none !important;
+  }
+}
+
+.hide-tablet {
+  @include tablet {
+    display: none !important;
+  }
+}
+
+.hide-desktop {
+  @include desktop {
+    display: none !important;
+  }
+}
+
+// Show only on specific breakpoints
+.show-mobile-only {
+  display: none !important;
+  @include mobile {
+    display: block !important;
+  }
+}
+
+.show-tablet-only {
+  display: none !important;
+  @include tablet {
+    display: block !important;
+  }
+}
+
+// ─── Responsive Spacing ─────────────────────────────────────────────────────
+.p-responsive {
+  padding: $content-padding;
+  @include mobile {
+    padding: $content-padding-mobile;
+  }
+}
+
+// ─── Responsive Typography ──────────────────────────────────────────────────
+.text-responsive {
+  font-size: 1rem;
+  @include mobile {
+    font-size: 0.875rem;
+  }
+}
+
+h1.text-responsive {
+  font-size: 1.5rem;
+  @include mobile {
+    font-size: 1.25rem;
+  }
+}
+
+// ─── Mobile Touch Targets ───────────────────────────────────────────────────
+@include mobile {
+  button,
+  a,
+  [role="button"],
+  .p-button,
+  .nav-item {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+// ─── Mobile DataTable Adjustments ───────────────────────────────────────────
+@include mobile {
+  .p-datatable {
+    .p-datatable-thead {
+      display: none;
+    }
+
+    .p-datatable-tbody > tr {
+      display: flex;
+      flex-wrap: wrap;
+      padding: 0.75rem;
+      border-bottom: 1px solid var(--eams-border);
+      gap: 0.5rem;
+    }
+
+    .p-datatable-tbody > tr > td {
+      border: none;
+      padding: 0.25rem 0;
+      width: auto;
+      flex: 1 1 45%;
+
+      &::before {
+        content: attr(data-label);
+        font-weight: 600;
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        color: var(--eams-text-muted);
+        display: block;
+        margin-bottom: 0.15rem;
+      }
+    }
+  }
+}
+
+// ─── Mobile Form Adjustments ────────────────────────────────────────────────
+@include mobile {
+  .form-grid {
+    grid-template-columns: 1fr !important;
+
+    .col-span-2 {
+      grid-column: span 1 !important;
+    }
+  }
+
+  .form-actions {
+    flex-direction: column-reverse;
+
+    button,
+    .p-button {
+      width: 100%;
+    }
+  }
+}
+
+// ─── Mobile Dialog Adjustments ──────────────────────────────────────────────
+@include mobile {
+  .p-dialog {
+    width: 95vw !important;
+    max-width: 95vw !important;
+    margin: 0.5rem;
+  }
+}
+
+// ─── Tablet Adjustments ─────────────────────────────────────────────────────
+@include tablet {
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .chart-grid {
+    grid-template-columns: 1fr;
+  }
+}
