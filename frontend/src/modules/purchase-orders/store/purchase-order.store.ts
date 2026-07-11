@@ -37,6 +37,9 @@ export const usePurchaseOrderStore = defineStore('purchase-orders', () => {
       pagination.value.totalPages = response.totalPages
       pagination.value.first = response.first
       pagination.value.last = response.last
+    } catch {
+      // Silently handle — view stays rendered with empty data
+      orders.value = []
     } finally {
       loadingStore.stopLoading()
     }

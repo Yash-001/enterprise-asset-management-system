@@ -11,27 +11,27 @@
       />
       <Button
         v-if="hasPermission(PERMISSIONS.WORKORDER_CREATE)"
-        label="Create Work Order"
+        label="Work Orders"
         icon="pi pi-wrench"
         severity="warning"
         outlined
-        @click="router.push({ name: ROUTE_NAMES.WORK_ORDER_CREATE })"
+        @click="router.push({ name: ROUTE_NAMES.WORK_ORDERS })"
       />
       <Button
         v-if="hasPermission(PERMISSIONS.PURCHASE_CREATE)"
-        label="New Purchase Order"
+        label="Purchase Orders"
         icon="pi pi-shopping-cart"
         severity="success"
         outlined
-        @click="router.push({ name: ROUTE_NAMES.PURCHASE_ORDER_CREATE })"
+        @click="router.push({ name: ROUTE_NAMES.PURCHASE_ORDERS })"
       />
       <Button
         v-if="hasPermission(PERMISSIONS.INVENTORY_CREATE)"
-        label="Add Spare Part"
+        label="Inventory"
         icon="pi pi-warehouse"
         severity="info"
         outlined
-        @click="router.push({ name: ROUTE_NAMES.SPARE_PART_CREATE })"
+        @click="router.push({ name: ROUTE_NAMES.INVENTORY })"
       />
     </div>
   </BaseCard>

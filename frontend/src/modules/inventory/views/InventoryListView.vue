@@ -78,9 +78,9 @@ import { formatCurrency } from '@/shared/utils'
 import type { SparePartListItem } from '../types'
 import type { DataTablePageEvent, DataTableSortEvent } from '@/shared/types'
 
-const router = useRouter()
 const inventoryStore = useInventoryStore()
 const loadingStore = useLoadingStore()
+const router = useRouter()
 const { hasPermission } = usePermission()
 const { showSuccess, showApiError } = useAppToast()
 const { confirmDelete } = useAppConfirm()

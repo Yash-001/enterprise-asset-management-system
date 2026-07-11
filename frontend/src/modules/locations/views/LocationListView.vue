@@ -51,13 +51,82 @@
         </Column>
       </BaseDataTable>
     </BaseCard>
+
+    <!-- Create Location Dialog -->
+    <Dialog
+      v-model:visible="showCreateDialog"
+      header="Create Location"
+      :modal="true"
+      :style="{ width: '500px' }"
+    >
+      <div class="field">
+        <label for="locationCode">Location Code</label>
+        <InputText
+          id="locationCode"
+          v-model="createForm.locationCode"
+          class="w-full"
+          placeholder="e.g. LOC-001"
+        />
+      </div>
+      <div class="field">
+        <label for="locationName">Location Name</label>
+        <InputText
+          id="locationName"
+          v-model="createForm.locationName"
+          class="w-full"
+          placeholder="e.g. Main Warehouse"
+        />
+      </div>
+      <div class="field">
+        <label for="address">Address</label>
+        <InputText
+          id="address"
+          v-model="createForm.address"
+          class="w-full"
+          placeholder="Street address"
+        />
+      </div>
+      <div class="field">
+        <label for="city">City</label>
+        <InputText
+          id="city"
+          v-model="createForm.city"
+          class="w-full"
+          placeholder="City"
+        />
+      </div>
+      <div class="field">
+        <label for="state">State</label>
+        <InputText
+          id="state"
+          v-model="createForm.state"
+          class="w-full"
+          placeholder="State / Province"
+        />
+      </div>
+      <div class="field">
+        <label for="country">Country</label>
+        <InputText
+          id="country"
+          v-model="createForm.country"
+          class="w-full"
+          placeholder="Country"
+        />
+      </div>
+      <template #footer>
+        <Button label="Cancel" text @click="showCreateDialog = false" />
+        <Button label="Create" icon="pi pi-check" @click="submitCreate" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
 import { useLocationStore } from '../store'
 import { useLoadingStore } from '@/shared/stores'
 import { usePermission, useAppToast, useAppConfirm } from '@/shared/composables'
@@ -70,6 +139,16 @@ const { hasPermission } = usePermission()
 const { showSuccess, showApiError } = useAppToast()
 const { confirmDelete } = useAppConfirm()
 
+const showCreateDialog = ref(false)
+const createForm = reactive({
+  locationCode: '',
+  locationName: '',
+  address: '',
+  city: '',
+  state: '',
+  country: '',
+})
+
 onMounted(() => loadData())
 
 async function loadData(): Promise<void> {
@@ -77,7 +156,31 @@ async function loadData(): Promise<void> {
 }
 
 function handleCreate(): void {
-  // TODO: Open create dialog or navigate to create form
+  createForm.locationCode = ''
+  createForm.locationName = ''
+  createForm.address = ''
+  createForm.city = ''
+  createForm.state = ''
+  createForm.country = ''
+  showCreateDialog.value = true
+}
+
+async function submitCreate(): Promise<void> {
+  try {
+    await locationStore.createLocation({
+      locationCode: createForm.locationCode,
+      locationName: createForm.locationName,
+      address: createForm.address || undefined,
+      city: createForm.city || undefined,
+      state: createForm.state || undefined,
+      country: createForm.country || undefined,
+    })
+    showSuccess('Location created', `${createForm.locationCode} has been created`)
+    showCreateDialog.value = false
+    await loadData()
+  } catch (err) {
+    showApiError(err)
+  }
 }
 
 function handleEdit(_location: LocationListItem): void {

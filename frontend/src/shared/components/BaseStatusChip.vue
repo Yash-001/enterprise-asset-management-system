@@ -38,7 +38,7 @@ const defaultMap: Record<string, { label?: string; severity: string }> = {
 
 const map = computed(() => props.statusMap || defaultMap)
 const entry = computed(() => map.value[props.status] || { severity: 'neutral' })
-const label = computed(() => entry.value.label || props.status.replace(/_/g, ' '))
+const label = computed(() => entry.value.label || (props.status ? props.status.replace(/_/g, ' ') : '—'))
 const severity = computed(() => entry.value.severity)
 </script>
 

@@ -13,7 +13,10 @@ export const useDepartmentStore = defineStore('departments', () => {
   async function fetchDepartments(): Promise<void> {
     loadingStore.startLoading()
     try {
-      departments.value = await departmentService.getAll()
+      const response = await departmentService.getAll()
+      departments.value = response.content
+    } catch {
+      departments.value = []
     } finally {
       loadingStore.stopLoading()
     }

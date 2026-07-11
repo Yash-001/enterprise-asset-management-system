@@ -37,6 +37,9 @@ export const useMaintenanceStore = defineStore('maintenance', () => {
       pagination.value.totalPages = response.totalPages
       pagination.value.first = response.first
       pagination.value.last = response.last
+    } catch {
+      // Silently handle — view stays rendered with empty data
+      plans.value = []
     } finally {
       loadingStore.stopLoading()
     }

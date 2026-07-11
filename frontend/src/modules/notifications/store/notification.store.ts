@@ -13,8 +13,11 @@ export const useNotificationStore = defineStore('notifications', () => {
   async function fetchNotifications(): Promise<void> {
     loadingStore.startLoading()
     try {
-      notifications.value = await notificationService.getAll()
+      const response = await notificationService.getAll()
+      notifications.value = response.content
       unreadCount.value = notifications.value.filter(n => !n.read).length
+    } catch {
+      notifications.value = []
     } finally {
       loadingStore.stopLoading()
     }

@@ -13,7 +13,10 @@ export const useLocationStore = defineStore('locations', () => {
   async function fetchLocations(): Promise<void> {
     loadingStore.startLoading()
     try {
-      locations.value = await locationService.getAll()
+      const response = await locationService.getAll()
+      locations.value = response.content
+    } catch {
+      locations.value = []
     } finally {
       loadingStore.stopLoading()
     }

@@ -1,9 +1,10 @@
 import { apiClient, ENDPOINTS } from '@/api'
+import type { PageResponse } from '@/shared/types'
 import type { LocationListItem, LocationCreatePayload } from '../types'
 
 export class LocationService {
-  async getAll(): Promise<LocationListItem[]> {
-    return apiClient.get<LocationListItem[]>(ENDPOINTS.LOCATIONS.BASE)
+  async getAll(params: Record<string, unknown> = {}): Promise<PageResponse<LocationListItem>> {
+    return apiClient.getPaged<LocationListItem>(ENDPOINTS.LOCATIONS.BASE, params)
   }
 
   async getById(id: number): Promise<LocationListItem> {

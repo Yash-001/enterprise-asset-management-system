@@ -12,11 +12,11 @@ export class DocumentService {
   }
 
   async upload(formData: FormData): Promise<DocumentListItem> {
-    return apiClient.post<DocumentListItem>(ENDPOINTS.DOCUMENTS.BASE, formData)
+    return apiClient.upload<DocumentListItem>(ENDPOINTS.DOCUMENTS.BASE, formData)
   }
 
   async download(id: number): Promise<Blob> {
-    return apiClient.get<Blob>(ENDPOINTS.DOCUMENTS.DOWNLOAD(id))
+    return apiClient.download(ENDPOINTS.DOCUMENTS.DOWNLOAD(id))
   }
 
   async delete(id: number): Promise<void> {

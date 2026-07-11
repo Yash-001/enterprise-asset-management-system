@@ -1,15 +1,6 @@
 <template>
   <div>
-    <BasePageHeader title="Assignments" subtitle="Manage asset assignments to employees">
-      <template #actions>
-        <Button
-          v-if="hasPermission(PERMISSIONS.ASSIGNMENT_CREATE)"
-          label="New Assignment"
-          icon="pi pi-plus"
-          @click="router.push({ name: ROUTE_NAMES.ASSIGNMENT_CREATE })"
-        />
-      </template>
-    </BasePageHeader>
+    <BasePageHeader title="Assignments" subtitle="Manage asset assignments to employees" />
 
     <BaseCard>
       <BaseDataTable
@@ -55,17 +46,15 @@
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import { useRouter } from 'vue-router'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import { useAssignmentStore } from '../store'
 import { useLoadingStore } from '@/shared/stores'
 import { usePermission, useAppToast, useAppConfirm } from '@/shared/composables'
-import { PERMISSIONS, ROUTE_NAMES } from '@/shared/constants'
+import { PERMISSIONS } from '@/shared/constants'
 import { formatDate } from '@/shared/utils'
 import type { AssignmentListItem } from '../types'
 
-const router = useRouter()
 const assignmentStore = useAssignmentStore()
 const loadingStore = useLoadingStore()
 const { hasPermission } = usePermission()

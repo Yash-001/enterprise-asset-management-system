@@ -21,6 +21,18 @@ export const useWorkOrderStore = defineStore('work-orders', () => {
     last: true
   })
 
+  async function fetchWorkOrderById(id: number): Promise<WorkOrderListItem | null> {
+    loadingStore.startLoading()
+    try {
+      selectedWorkOrder.value = await workOrderService.getById(id)
+      return selectedWorkOrder.value
+    } catch {
+      return null
+    } finally {
+      loadingStore.stopLoading()
+    }
+  }
+
   async function fetchWorkOrders(filters: WorkOrderSearchFilters = {}): Promise<void> {
     loadingStore.startLoading()
     try {
@@ -37,6 +49,9 @@ export const useWorkOrderStore = defineStore('work-orders', () => {
       pagination.value.totalPages = response.totalPages
       pagination.value.first = response.first
       pagination.value.last = response.last
+    } catch {
+      // Silently handle — view stays rendered with empty data
+      workOrders.value = []
     } finally {
       loadingStore.stopLoading()
     }
@@ -80,6 +95,7 @@ export const useWorkOrderStore = defineStore('work-orders', () => {
     workOrders,
     selectedWorkOrder,
     pagination,
+    fetchWorkOrderById,
     fetchWorkOrders,
     createWorkOrder,
     updateWorkOrder,

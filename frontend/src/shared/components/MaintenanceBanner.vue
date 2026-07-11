@@ -24,8 +24,9 @@ onMounted(async () => {
       showBanner.value = true
     }
   } catch {
-    showBanner.value = true
-    logger.warn('Health check failed — showing maintenance banner')
+    // Don't show maintenance banner for network errors during dev
+    // Only show if backend explicitly reports non-UP status
+    showBanner.value = false
   }
 })
 

@@ -1,15 +1,6 @@
 <template>
   <div>
-    <BasePageHeader title="Purchase Orders" subtitle="Manage purchase orders and procurement">
-      <template #actions>
-        <Button
-          v-if="hasPermission(PERMISSIONS.PURCHASE_CREATE)"
-          label="New Purchase Order"
-          icon="pi pi-plus"
-          @click="router.push({ name: ROUTE_NAMES.PURCHASE_ORDER_CREATE })"
-        />
-      </template>
-    </BasePageHeader>
+    <BasePageHeader title="Purchase Orders" subtitle="Manage purchase orders and procurement" />
 
     <BaseCard>
       <BaseDataTable
@@ -42,14 +33,6 @@
         <Column header="Actions" style="width: 120px">
           <template #body="{ data }">
             <Button
-              v-if="hasPermission(PERMISSIONS.PURCHASE_EDIT)"
-              icon="pi pi-pencil"
-              text
-              rounded
-              size="small"
-              @click="router.push({ name: ROUTE_NAMES.PURCHASE_ORDER_EDIT, params: { id: data.id } })"
-            />
-            <Button
               v-if="hasPermission(PERMISSIONS.PURCHASE_DELETE)"
               icon="pi pi-trash"
               text
@@ -67,18 +50,16 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import { usePurchaseOrderStore } from '../store'
 import { useLoadingStore } from '@/shared/stores'
 import { usePermission, useAppToast, useAppConfirm } from '@/shared/composables'
-import { PERMISSIONS, ROUTE_NAMES } from '@/shared/constants'
+import { PERMISSIONS } from '@/shared/constants'
 import { formatCurrency, formatDate } from '@/shared/utils'
 import type { PurchaseOrderListItem } from '../types'
 import type { DataTablePageEvent, DataTableSortEvent } from '@/shared/types'
 
-const router = useRouter()
 const purchaseOrderStore = usePurchaseOrderStore()
 const loadingStore = useLoadingStore()
 const { hasPermission } = usePermission()

@@ -1,15 +1,6 @@
 <template>
   <div>
-    <BasePageHeader title="Vendors" subtitle="Manage vendor and supplier information">
-      <template #actions>
-        <Button
-          v-if="hasPermission(PERMISSIONS.VENDOR_CREATE)"
-          label="New Vendor"
-          icon="pi pi-plus"
-          @click="router.push({ name: ROUTE_NAMES.VENDOR_CREATE })"
-        />
-      </template>
-    </BasePageHeader>
+    <BasePageHeader title="Vendors" subtitle="Manage vendor and supplier information" />
 
     <BaseCard>
       <BaseDataTable
@@ -36,14 +27,6 @@
         <Column header="Actions" style="width: 120px">
           <template #body="{ data }">
             <Button
-              v-if="hasPermission(PERMISSIONS.VENDOR_EDIT)"
-              icon="pi pi-pencil"
-              text
-              rounded
-              size="small"
-              @click="router.push({ name: ROUTE_NAMES.VENDOR_EDIT, params: { id: data.id } })"
-            />
-            <Button
               v-if="hasPermission(PERMISSIONS.VENDOR_DELETE)"
               icon="pi pi-trash"
               text
@@ -61,17 +44,15 @@
 
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
-import { useRouter } from 'vue-router'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
 import { useVendorStore } from '../store'
 import { useLoadingStore } from '@/shared/stores'
 import { usePermission, useAppToast, useAppConfirm } from '@/shared/composables'
-import { PERMISSIONS, ROUTE_NAMES } from '@/shared/constants'
+import { PERMISSIONS } from '@/shared/constants'
 import type { VendorListItem } from '../types'
 import type { DataTablePageEvent, DataTableSortEvent } from '@/shared/types'
 
-const router = useRouter()
 const vendorStore = useVendorStore()
 const loadingStore = useLoadingStore()
 const { hasPermission } = usePermission()

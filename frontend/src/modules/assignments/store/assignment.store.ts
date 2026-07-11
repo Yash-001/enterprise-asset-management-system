@@ -13,7 +13,10 @@ export const useAssignmentStore = defineStore('assignments', () => {
   async function fetchAssignments(): Promise<void> {
     loadingStore.startLoading()
     try {
-      assignments.value = await assignmentService.getAll()
+      const response = await assignmentService.getHistory()
+      assignments.value = response.content
+    } catch {
+      assignments.value = []
     } finally {
       loadingStore.stopLoading()
     }

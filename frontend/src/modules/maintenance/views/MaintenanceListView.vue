@@ -80,9 +80,9 @@ import { formatDate } from '@/shared/utils'
 import type { MaintenancePlanListItem } from '../types'
 import type { DataTablePageEvent, DataTableSortEvent } from '@/shared/types'
 
-const router = useRouter()
 const maintenanceStore = useMaintenanceStore()
 const loadingStore = useLoadingStore()
+const router = useRouter()
 const { hasPermission } = usePermission()
 const { showSuccess, showApiError } = useAppToast()
 const { confirmDelete } = useAppConfirm()

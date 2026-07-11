@@ -63,13 +63,59 @@
         </Column>
       </BaseDataTable>
     </BaseCard>
+
+    <!-- Upload Document Dialog -->
+    <Dialog
+      v-model:visible="showUploadDialog"
+      header="Upload Document"
+      :modal="true"
+      :style="{ width: '450px' }"
+    >
+      <div class="field">
+        <label for="file">File</label>
+        <input
+          id="file"
+          type="file"
+          class="w-full"
+          @change="onFileSelect"
+        />
+      </div>
+      <div class="field">
+        <label for="referenceType">Reference Type</label>
+        <Select
+          id="referenceType"
+          v-model="uploadForm.referenceType"
+          :options="referenceTypeOptions"
+          optionLabel="label"
+          optionValue="value"
+          placeholder="Select reference type"
+          class="w-full"
+        />
+      </div>
+      <div class="field">
+        <label for="referenceId">Reference ID</label>
+        <InputNumber
+          id="referenceId"
+          v-model="uploadForm.referenceId"
+          class="w-full"
+          placeholder="Reference ID"
+        />
+      </div>
+      <template #footer>
+        <Button label="Cancel" text @click="showUploadDialog = false" />
+        <Button label="Upload" icon="pi pi-upload" @click="submitUpload" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import Select from 'primevue/select'
+import InputNumber from 'primevue/inputnumber'
 import { useDocumentStore } from '../store'
 import { useLoadingStore } from '@/shared/stores'
 import { usePermission, useAppToast, useAppConfirm } from '@/shared/composables'
@@ -84,6 +130,20 @@ const { hasPermission } = usePermission()
 const { showSuccess, showApiError } = useAppToast()
 const { confirmDelete } = useAppConfirm()
 const searchQuery = ref('')
+
+const showUploadDialog = ref(false)
+const selectedFile = ref<File | null>(null)
+const uploadForm = reactive({
+  referenceType: '',
+  referenceId: null as number | null,
+})
+
+const referenceTypeOptions = [
+  { label: 'Asset', value: 'ASSET' },
+  { label: 'Work Order', value: 'WORK_ORDER' },
+  { label: 'Purchase Order', value: 'PURCHASE_ORDER' },
+  { label: 'Maintenance Plan', value: 'MAINTENANCE_PLAN' },
+]
 
 onMounted(() => loadData())
 
@@ -111,7 +171,38 @@ function handleSearch(query: string): void {
 }
 
 function handleUpload(): void {
-  // TODO: Open upload dialog
+  selectedFile.value = null
+  uploadForm.referenceType = ''
+  uploadForm.referenceId = null
+  showUploadDialog.value = true
+}
+
+function onFileSelect(event: Event): void {
+  const input = event.target as HTMLInputElement
+  if (input.files && input.files.length > 0) {
+    selectedFile.value = input.files[0]
+  }
+}
+
+async function submitUpload(): Promise<void> {
+  if (!selectedFile.value) return
+
+  try {
+    const formData = new FormData()
+    formData.append('file', selectedFile.value)
+    if (uploadForm.referenceType) {
+      formData.append('referenceType', uploadForm.referenceType)
+    }
+    if (uploadForm.referenceId != null) {
+      formData.append('referenceId', String(uploadForm.referenceId))
+    }
+    await documentStore.uploadDocument(formData)
+    showSuccess('Document uploaded', `${selectedFile.value.name} has been uploaded`)
+    showUploadDialog.value = false
+    await loadData()
+  } catch (err) {
+    showApiError(err)
+  }
 }
 
 async function handleDownload(document: DocumentListItem): Promise<void> {

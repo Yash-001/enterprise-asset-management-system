@@ -14,7 +14,7 @@
       </details>
     </div>
   </div>
-  <slot v-else />
+  <slot v-else :key="errorKey" />
 </template>
 
 <script setup lang="ts">
@@ -26,13 +26,14 @@ import { logger } from '@/shared/utils'
 const router = useRouter()
 const hasError = ref(false)
 const errorMessage = ref('')
+const errorKey = ref(0)
 const isDev = import.meta.env.DEV
 
 onErrorCaptured((err: Error) => {
   hasError.value = true
   errorMessage.value = `${err.name}: ${err.message}\n${err.stack || ''}`
   logger.error('ErrorBoundary caught:', err.message, err.stack)
-  return false // prevent propagation
+  return false
 })
 
 function handleReload(): void {
@@ -41,6 +42,7 @@ function handleReload(): void {
 
 function handleGoHome(): void {
   hasError.value = false
+  errorKey.value++
   router.push('/')
 }
 </script>

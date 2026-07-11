@@ -1,9 +1,10 @@
 import { apiClient, ENDPOINTS } from '@/api'
+import type { PageResponse } from '@/shared/types'
 import type { DepartmentListItem, DepartmentCreatePayload } from '../types'
 
 export class DepartmentService {
-  async getAll(): Promise<DepartmentListItem[]> {
-    return apiClient.get<DepartmentListItem[]>(ENDPOINTS.DEPARTMENTS.BASE)
+  async getAll(params: Record<string, unknown> = {}): Promise<PageResponse<DepartmentListItem>> {
+    return apiClient.getPaged<DepartmentListItem>(ENDPOINTS.DEPARTMENTS.BASE, params)
   }
 
   async getById(id: number): Promise<DepartmentListItem> {

@@ -29,6 +29,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/work-orders/views/WorkOrderListView.vue'),
         meta: { title: 'Work Orders', permissions: ['WORKORDER_VIEW'] }
       },
+      {
+        path: ROUTE_PATHS.WORK_ORDERS + '/new',
+        name: ROUTE_NAMES.WORK_ORDER_CREATE,
+        component: () => import('@/modules/work-orders/views/WorkOrderFormView.vue'),
+        meta: { title: 'Create Work Order', permissions: ['WORKORDER_CREATE'] }
+      },
+      {
+        path: ROUTE_PATHS.WORK_ORDERS + '/:id/edit',
+        name: ROUTE_NAMES.WORK_ORDER_EDIT,
+        component: () => import('@/modules/work-orders/views/WorkOrderFormView.vue'),
+        meta: { title: 'Edit Work Order', permissions: ['WORKORDER_EDIT'] }
+      },
 
       // Assignments
       {
@@ -36,6 +48,12 @@ const routes: RouteRecordRaw[] = [
         name: ROUTE_NAMES.ASSIGNMENTS,
         component: () => import('@/modules/assignments/views/AssignmentListView.vue'),
         meta: { title: 'Assignments', permissions: ['ASSIGNMENT_VIEW'] }
+      },
+      {
+        path: ROUTE_PATHS.ASSIGNMENTS + '/new',
+        name: ROUTE_NAMES.ASSIGNMENT_CREATE,
+        component: () => import('@/modules/assignments/views/AssignmentFormView.vue'),
+        meta: { title: 'Assign Asset', permissions: ['ASSIGNMENT_CREATE'] }
       },
 
       // Maintenance
@@ -45,6 +63,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/maintenance/views/MaintenanceListView.vue'),
         meta: { title: 'Maintenance', permissions: ['MAINTENANCE_VIEW'] }
       },
+      {
+        path: ROUTE_PATHS.MAINTENANCE + '/new',
+        name: ROUTE_NAMES.MAINTENANCE_CREATE,
+        component: () => import('@/modules/maintenance/views/MaintenanceFormView.vue'),
+        meta: { title: 'Create Maintenance Plan', permissions: ['MAINTENANCE_CREATE'] }
+      },
+      {
+        path: ROUTE_PATHS.MAINTENANCE + '/:id/edit',
+        name: ROUTE_NAMES.MAINTENANCE_EDIT,
+        component: () => import('@/modules/maintenance/views/MaintenanceFormView.vue'),
+        meta: { title: 'Edit Maintenance Plan', permissions: ['MAINTENANCE_EDIT'] }
+      },
 
       // Inventory
       {
@@ -52,6 +82,18 @@ const routes: RouteRecordRaw[] = [
         name: ROUTE_NAMES.INVENTORY,
         component: () => import('@/modules/inventory/views/InventoryListView.vue'),
         meta: { title: 'Inventory', permissions: ['INVENTORY_VIEW'] }
+      },
+      {
+        path: ROUTE_PATHS.INVENTORY + '/new',
+        name: ROUTE_NAMES.SPARE_PART_CREATE,
+        component: () => import('@/modules/inventory/views/SparePartFormView.vue'),
+        meta: { title: 'Add Spare Part', permissions: ['INVENTORY_CREATE'] }
+      },
+      {
+        path: ROUTE_PATHS.INVENTORY + '/:id/edit',
+        name: ROUTE_NAMES.SPARE_PART_EDIT,
+        component: () => import('@/modules/inventory/views/SparePartFormView.vue'),
+        meta: { title: 'Edit Spare Part', permissions: ['INVENTORY_EDIT'] }
       },
 
       // Purchase Orders
@@ -61,6 +103,18 @@ const routes: RouteRecordRaw[] = [
         component: () => import('@/modules/purchase-orders/views/PurchaseOrderListView.vue'),
         meta: { title: 'Purchase Orders', permissions: ['PURCHASE_VIEW'] }
       },
+      {
+        path: ROUTE_PATHS.PURCHASE_ORDERS + '/new',
+        name: ROUTE_NAMES.PURCHASE_ORDER_CREATE,
+        component: () => import('@/modules/purchase-orders/views/PurchaseOrderFormView.vue'),
+        meta: { title: 'Create Purchase Order', permissions: ['PURCHASE_CREATE'] }
+      },
+      {
+        path: ROUTE_PATHS.PURCHASE_ORDERS + '/:id/edit',
+        name: ROUTE_NAMES.PURCHASE_ORDER_EDIT,
+        component: () => import('@/modules/purchase-orders/views/PurchaseOrderFormView.vue'),
+        meta: { title: 'Edit Purchase Order', permissions: ['PURCHASE_EDIT'] }
+      },
 
       // Vendors
       {
@@ -68,6 +122,18 @@ const routes: RouteRecordRaw[] = [
         name: ROUTE_NAMES.VENDORS,
         component: () => import('@/modules/vendors/views/VendorListView.vue'),
         meta: { title: 'Vendors', permissions: ['VENDOR_VIEW'] }
+      },
+      {
+        path: ROUTE_PATHS.VENDORS + '/new',
+        name: ROUTE_NAMES.VENDOR_CREATE,
+        component: () => import('@/modules/vendors/views/VendorFormView.vue'),
+        meta: { title: 'Add Vendor', permissions: ['VENDOR_CREATE'] }
+      },
+      {
+        path: ROUTE_PATHS.VENDORS + '/:id/edit',
+        name: ROUTE_NAMES.VENDOR_EDIT,
+        component: () => import('@/modules/vendors/views/VendorFormView.vue'),
+        meta: { title: 'Edit Vendor', permissions: ['VENDOR_EDIT'] }
       },
 
       // Departments

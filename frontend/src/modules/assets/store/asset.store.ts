@@ -37,6 +37,8 @@ export const useAssetStore = defineStore('assets', () => {
       pagination.value.totalPages = response.totalPages
       pagination.value.first = response.first
       pagination.value.last = response.last
+    } catch {
+      assets.value = []
     } finally {
       loadingStore.stopLoading()
     }

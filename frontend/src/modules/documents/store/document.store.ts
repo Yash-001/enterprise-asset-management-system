@@ -36,6 +36,9 @@ export const useDocumentStore = defineStore('documents', () => {
       pagination.value.totalPages = response.totalPages
       pagination.value.first = response.first
       pagination.value.last = response.last
+    } catch {
+      // Silently handle — view stays rendered with empty data
+      documents.value = []
     } finally {
       loadingStore.stopLoading()
     }

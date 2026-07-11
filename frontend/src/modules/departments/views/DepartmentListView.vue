@@ -49,13 +49,57 @@
         </Column>
       </BaseDataTable>
     </BaseCard>
+
+    <!-- Create Department Dialog -->
+    <Dialog
+      v-model:visible="showCreateDialog"
+      header="Create Department"
+      :modal="true"
+      :style="{ width: '450px' }"
+    >
+      <div class="field">
+        <label for="departmentCode">Department Code</label>
+        <InputText
+          id="departmentCode"
+          v-model="createForm.departmentCode"
+          class="w-full"
+          placeholder="e.g. DEPT-001"
+        />
+      </div>
+      <div class="field">
+        <label for="departmentName">Department Name</label>
+        <InputText
+          id="departmentName"
+          v-model="createForm.departmentName"
+          class="w-full"
+          placeholder="e.g. Engineering"
+        />
+      </div>
+      <div class="field">
+        <label for="description">Description</label>
+        <Textarea
+          id="description"
+          v-model="createForm.description"
+          class="w-full"
+          rows="3"
+          placeholder="Optional description"
+        />
+      </div>
+      <template #footer>
+        <Button label="Cancel" text @click="showCreateDialog = false" />
+        <Button label="Create" icon="pi pi-check" @click="submitCreate" />
+      </template>
+    </Dialog>
   </div>
 </template>
 
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { onMounted, ref, reactive } from 'vue'
 import Column from 'primevue/column'
 import Button from 'primevue/button'
+import Dialog from 'primevue/dialog'
+import InputText from 'primevue/inputtext'
+import Textarea from 'primevue/textarea'
 import { useDepartmentStore } from '../store'
 import { useLoadingStore } from '@/shared/stores'
 import { usePermission, useAppToast, useAppConfirm } from '@/shared/composables'
@@ -68,6 +112,13 @@ const { hasPermission } = usePermission()
 const { showSuccess, showApiError } = useAppToast()
 const { confirmDelete } = useAppConfirm()
 
+const showCreateDialog = ref(false)
+const createForm = reactive({
+  departmentCode: '',
+  departmentName: '',
+  description: '',
+})
+
 onMounted(() => loadData())
 
 async function loadData(): Promise<void> {
@@ -75,7 +126,25 @@ async function loadData(): Promise<void> {
 }
 
 function handleCreate(): void {
-  // TODO: Open create dialog or navigate to create form
+  createForm.departmentCode = ''
+  createForm.departmentName = ''
+  createForm.description = ''
+  showCreateDialog.value = true
+}
+
+async function submitCreate(): Promise<void> {
+  try {
+    await departmentStore.createDepartment({
+      departmentCode: createForm.departmentCode,
+      departmentName: createForm.departmentName,
+      description: createForm.description || undefined,
+    })
+    showSuccess('Department created', `${createForm.departmentCode} has been created`)
+    showCreateDialog.value = false
+    await loadData()
+  } catch (err) {
+    showApiError(err)
+  }
 }
 
 function handleEdit(_department: DepartmentListItem): void {
