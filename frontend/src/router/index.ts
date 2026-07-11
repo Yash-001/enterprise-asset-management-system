@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory, type RouteRecordRaw } from 'vue-router'
 import { authRoutes } from '@/modules/auth'
+import { dashboardRoutes } from '@/modules/dashboard'
 import { ROUTE_NAMES, ROUTE_PATHS, PERMISSIONS } from '@/shared/constants'
 import { isFeatureEnabled } from '@/shared/config'
 import { authGuard } from './guards'
@@ -23,12 +24,7 @@ const routes: RouteRecordRaw[] = [
         path: '',
         redirect: ROUTE_PATHS.DASHBOARD
       },
-      {
-        path: ROUTE_PATHS.DASHBOARD,
-        name: ROUTE_NAMES.DASHBOARD,
-        component: () => import('@/modules/auth/views/LoginView.vue'), // placeholder — DashboardView in next chunk
-        meta: { title: 'Dashboard' }
-      },
+      dashboardRoutes,
 
       // ─── Assets ───────────────────────────────────────────────────
       {
