@@ -19,7 +19,7 @@ FROM deps AS builder
 WORKDIR /app
 
 COPY src/ src/
-RUN ./mvnw package -Dmaven.test.skip=true -B --no-transfer-progress && \
+RUN ./mvnw clean package -Dmaven.test.skip=true -B --no-transfer-progress && \
     java -Djarmode=layertools -jar target/*.jar extract --destination /app/extracted
 
 # ===========================
