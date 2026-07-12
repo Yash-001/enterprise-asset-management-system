@@ -1,7 +1,7 @@
-# ===========================
-# Render Blueprint — EAMS Backend
-# https://render.com/docs/blueprint-spec
-# ===========================
+# ============================================================================
+# Render Blueprint — EAMS Backend (Spring Boot 3.5 / Java 21)
+# Deploy: Push to GitHub → Render auto-detects this file → provisions infra
+# ============================================================================
 
 services:
   - type: web
@@ -14,11 +14,11 @@ services:
     branch: main
     healthCheckPath: /management/health
     envVars:
-      # Spring profile
+      # ─── Spring Profile ───
       - key: SPRING_PROFILES_ACTIVE
         value: prod
 
-      # Database — Render auto-injects these from the linked database
+      # ─── Database (auto-linked from Render PostgreSQL) ───
       - key: SPRING_DATASOURCE_URL
         fromDatabase:
           name: eams-db
@@ -32,13 +32,17 @@ services:
           name: eams-db
           property: password
 
-      # JWT
+      # ─── JWT (auto-generated secret) ───
       - key: JWT_SECRET
         generateValue: true
       - key: JWT_EXPIRATION
         value: "12h"
 
-      # Mail (optional — set manually in dashboard)
+      # ─── CORS (set to your frontend domain) ───
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+      # ─── Mail (configure in Render dashboard) ───
       - key: MAIL_HOST
         sync: false
       - key: MAIL_PORT
@@ -50,13 +54,9 @@ services:
       - key: MAIL_FROM
         value: "noreply@eams.com"
 
-      # Storage
+      # ─── Storage ───
       - key: STORAGE_PATH
         value: "/app/uploads"
-
-      # CORS (set to your frontend URL)
-      - key: CORS_ALLOWED_ORIGINS
-        sync: false
 
 databases:
   - name: eams-db
