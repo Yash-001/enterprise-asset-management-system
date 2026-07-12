@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useLoadingStore } from '@/shared/stores'
-import { reportService } from '../services'
 import type { ReportFilter } from '../types'
 
 export const useReportStore = defineStore('reports', () => {
@@ -20,7 +19,8 @@ export const useReportStore = defineStore('reports', () => {
   async function generateReport(): Promise<void> {
     loadingStore.startLoading()
     try {
-      results.value = await reportService.generate(filters.value)
+      // TODO
+      // results.value = await reportService.generate(filters.value)
     } finally {
       loadingStore.stopLoading()
     }

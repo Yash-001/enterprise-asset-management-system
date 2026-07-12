@@ -48,13 +48,11 @@
 import { onMounted } from 'vue'
 import Button from 'primevue/button'
 import { useNotificationStore } from '../store'
-import { useLoadingStore } from '@/shared/stores'
 import { useAppToast } from '@/shared/composables'
 import { timeAgo } from '@/shared/utils'
 import type { NotificationResponse } from '../types'
 
 const notificationStore = useNotificationStore()
-const loadingStore = useLoadingStore()
 const { showSuccess, showApiError } = useAppToast()
 
 onMounted(() => loadData())

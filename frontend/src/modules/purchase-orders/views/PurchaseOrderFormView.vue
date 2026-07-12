@@ -58,6 +58,7 @@ import { purchaseOrderService } from '../services'
 import { useAppToast } from '@/shared/composables'
 import { ROUTE_NAMES } from '@/shared/constants'
 import { toISODate } from '@/shared/utils'
+import { PurchaseOrderStatus } from '../types'
 
 const router = useRouter()
 const route = useRoute()
@@ -72,7 +73,7 @@ const errors = reactive<Record<string, string>>({})
 const form = reactive({
   poNumber: '',
   vendorId: null as number | null,
-  status: 'DRAFT',
+  status: 'DRAFT' as PurchaseOrderStatus,
   expectedDeliveryDate: null as Date | null,
   remarks: ''
 })
@@ -108,7 +109,7 @@ async function handleSubmit(): Promise<void> {
     const payload = {
       poNumber: form.poNumber.trim().toUpperCase(),
       vendorId: form.vendorId!,
-      status: form.status,
+      status: form.status as PurchaseOrderStatus,
       expectedDeliveryDate: form.expectedDeliveryDate ? toISODate(form.expectedDeliveryDate) : undefined,
       remarks: form.remarks || undefined,
       active: true,

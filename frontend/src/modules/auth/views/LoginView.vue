@@ -62,14 +62,12 @@ import Password from 'primevue/password'
 import Button from 'primevue/button'
 import Message from 'primevue/message'
 import { useAuthStore } from '../store'
-import { useLoadingStore } from '@/shared/stores'
 import { ROUTE_NAMES } from '@/shared/constants'
 import type { LoginCredentials } from '../types'
 
 const router = useRouter()
 const route = useRoute()
 const authStore = useAuthStore()
-const loadingStore = useLoadingStore()
 
 const form = reactive<LoginCredentials>({ email: '', password: '' })
 const error = ref('')

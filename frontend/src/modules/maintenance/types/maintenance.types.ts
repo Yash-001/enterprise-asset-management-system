@@ -12,6 +12,7 @@ export interface MaintenancePlanListItem {
   nextMaintenanceDate: string | null
   lastMaintenanceDate: string | null
   priority: string
+  estimatedDurationHours?: number | null
   status: MaintenanceStatus
   active: boolean
   createdAt: string

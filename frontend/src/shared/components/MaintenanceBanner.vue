@@ -13,7 +13,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { apiClient, ENDPOINTS } from '@/api'
-import { logger } from '@/shared/utils'
 
 const showBanner = ref(false)
 

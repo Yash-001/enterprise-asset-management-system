@@ -45,7 +45,9 @@ export function isFileSizeValid(size: number): boolean {
  */
 export function isFileExtensionValid(filename: string): boolean {
   const ext = getFileExtension(filename)
-  return APP_CONSTANTS.ALLOWED_FILE_EXTENSIONS.includes(ext)
+  return (
+    APP_CONSTANTS.ALLOWED_FILE_EXTENSIONS as readonly string[]
+  ).includes(ext)
 }
 
 /**

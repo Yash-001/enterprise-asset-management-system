@@ -61,9 +61,12 @@ import { useDebounceFn } from '@vueuse/core'
 import DataTable from 'primevue/datatable'
 import InputText from 'primevue/inputtext'
 import { APP_CONSTANTS } from '@/shared/constants'
-import type { DataTablePageEvent, DataTableSortEvent } from '@/shared/types'
+import type {
+    DataTablePageEvent,
+    DataTableSortEvent
+} from 'primevue/datatable'
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     data: unknown[]
     loading?: boolean
@@ -73,7 +76,7 @@ const props = withDefaults(
     lazy?: boolean
     dataKey?: string
     sortField?: string
-    sortOrder?: 1 | -1 | null
+    sortOrder?: 1 | -1 | undefined
     searchable?: boolean
     searchPlaceholder?: string
     emptyMessage?: string
@@ -86,7 +89,7 @@ const props = withDefaults(
     lazy: true,
     dataKey: 'id',
     sortField: undefined,
-    sortOrder: null,
+    sortOrder: undefined,
     searchable: false,
     searchPlaceholder: 'Search...',
     emptyMessage: 'No records found'

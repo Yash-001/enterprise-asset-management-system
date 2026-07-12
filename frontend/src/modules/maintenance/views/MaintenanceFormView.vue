@@ -144,7 +144,7 @@ onMounted(async () => {
         form.frequencyValue = plan.frequencyValue
         form.nextMaintenanceDate = plan.nextMaintenanceDate ? new Date(plan.nextMaintenanceDate) : null
         form.priority = plan.priority
-        form.estimatedDurationHours = plan.estimatedDurationHours
+        form.estimatedDurationHours = plan.estimatedDurationHours ?? null
       }
     } catch { /* stay on empty form */ }
   }

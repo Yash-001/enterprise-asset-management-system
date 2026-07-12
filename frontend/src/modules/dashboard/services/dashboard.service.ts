@@ -8,11 +8,27 @@ import type { DashboardStats } from '../types'
 export class DashboardService {
   async getStats(): Promise<DashboardStats> {
     // Fetch counts from multiple endpoints in parallel
-    const [assets, workOrders, maintenance, inventory] = await Promise.allSettled([
-      apiClient.get<{ totalElements: number }>(ENDPOINTS.ASSETS.BASE + '?size=1'),
-      apiClient.get<{ totalElements: number }>(ENDPOINTS.WORK_ORDERS.BASE + '?size=1'),
-      apiClient.get<{ content: unknown[] }>(ENDPOINTS.MAINTENANCE.DASHBOARD),
-      apiClient.get<{ content: unknown[] }>(ENDPOINTS.SPARE_PARTS.LOW_STOCK + '?size=1')
+    const [assets, workOrders, maintenance, inventory] =
+    await Promise.allSettled([
+      apiClient.get<{ totalElements: number }>(
+        ENDPOINTS.ASSETS.BASE + '?size=1'
+      ),
+
+      apiClient.get<{ totalElements: number }>(
+        ENDPOINTS.WORK_ORDERS.BASE + '?size=1'
+      ),
+
+      apiClient.get<{
+        overdueMaintenance: unknown[]
+      }>(
+        ENDPOINTS.MAINTENANCE.DASHBOARD
+      ),
+
+      apiClient.get<{
+        totalElements: number
+      }>(
+        ENDPOINTS.SPARE_PARTS.LOW_STOCK + '?size=1'
+      )
     ])
 
     return {

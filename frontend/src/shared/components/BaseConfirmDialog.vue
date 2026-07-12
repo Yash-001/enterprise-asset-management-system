@@ -24,7 +24,7 @@ import { ref } from 'vue'
 import Dialog from 'primevue/dialog'
 import Button from 'primevue/button'
 
-const props = withDefaults(
+withDefaults(
   defineProps<{
     header?: string
     message?: string
