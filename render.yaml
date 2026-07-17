@@ -34,7 +34,7 @@ services:
 
       # ─── JWT (auto-generated secret) ───
       - key: JWT_SECRET
-        generateValue: true
+        sync: false
       - key: JWT_EXPIRATION
         value: "PT12H"
 
