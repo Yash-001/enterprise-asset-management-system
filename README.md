@@ -1,5 +1,8 @@
 # 🏭 Enterprise Asset Management System (EAMS)
 
+Frontend: https://eams-frontend-2s6w.onrender.com
+Backend: https://eams-backend-osav.onrender.com
+
 [![CI — Build & Test](https://github.com/yashconsulting/enterprise-asset-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/yashconsulting/enterprise-asset-management-system/actions/workflows/ci.yml)
 [![Docker — Build & Push](https://github.com/yashconsulting/enterprise-asset-management-system/actions/workflows/docker.yml/badge.svg)](https://github.com/yashconsulting/enterprise-asset-management-system/actions/workflows/docker.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
